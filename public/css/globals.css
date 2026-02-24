@@ -1,0 +1,6 @@
+.stat-card.profit-card {
+    display: none;
+}
+.stat-card.profit-card {
+    display: none !important;
+}

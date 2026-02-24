@@ -1,0 +1,17 @@
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m refs/heads/main@{0}: reset: moving to 3970771e5d8311553c140e6da138eed60f76f3b8
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{0}: reset: moving to 3970771e5d8311553c140e6da138eed60f76f3b8
+[33mf8d4195[m refs/heads/main@{1}: commit: code changes
+[33mf8d4195[m HEAD@{1}: commit: code changes
+[33m2a5405c[m refs/heads/main@{2}: commit: Ignore node_modules
+[33m2a5405c[m HEAD@{2}: commit: Ignore node_modules
+[33m69f4212[m refs/heads/main@{3}: commit: Ignore node_modules
+[33m69f4212[m HEAD@{3}: commit: Ignore node_modules
+[33m7e85df5[m refs/heads/main@{4}: commit: Pushing my project to git
+[33m7e85df5[m HEAD@{4}: commit: Pushing my project to git
+[33mbb44514[m refs/heads/main@{5}: commit: Pushing my project to git
+[33mbb44514[m HEAD@{5}: commit: Pushing my project to git
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m refs/remotes/origin/main@{0}: update by push
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m refs/heads/main@{6}: Branch: renamed refs/heads/master to refs/heads/main
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{6}: Branch: renamed refs/heads/master to refs/heads/main
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m refs/heads/main@{7}: commit (initial): first commit
+[33m3970771[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m HEAD@{8}: commit (initial): first commit
