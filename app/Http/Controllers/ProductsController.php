@@ -237,98 +237,66 @@ class ProductsController extends BaseController
     }
 
     // -------------------- Product Orders & Purchases Details Page (server) -------------\\
-    public function detailsPage(Request $request, $id)
-    {
-        // authorize view access (use session/web guard user, not API guard)
-        $this->authorizeForUser($request->user() ?? auth()->user(), 'view', Product::class);
+public function detailsPage(Request $request, $id)
+{
+    $this->authorizeForUser($request->user('api'), 'view', Product::class);
 
-        $salesRaw = SaleDetail::with('product', 'sale', 'sale.client', 'sale.warehouse')
-            ->where('product_id', $id)
-            ->orderBy('id', 'desc')
-            ->get();
+    // PURCHASE HISTORY
+    $purchases = PurchaseDetail::with([
+        'purchase.provider',
+        'purchase.warehouse',
+        'product'
+    ])
+    ->where('product_id', $id)
+    ->orderByDesc('id')
+    ->get()
+    ->map(function ($detail) {
 
-        $sales = [];
-        foreach ($salesRaw as $detail) {
-            // unit resolution
-            $unit = null;
-            if ($detail->sale_unit_id !== null) {
-                $unit = Unit::where('id', $detail->sale_unit_id)->first();
-            } else {
-                $product_unit_sale_id = Product::with('unitSale')->where('id', $detail->product_id)->first();
-                if (! empty($product_unit_sale_id['unitSale'])) {
-                    $unit = Unit::where('id', $product_unit_sale_id['unitSale']->id)->first();
-                }
-            }
+        return [
+            'date' => $detail->purchase->date ?? null,
+            'Ref' => $detail->purchase->Ref ?? '',
+            'purchase_id' => $detail->purchase_id,
+            'provider_name' => $detail->purchase->provider->name ?? '',
+            'warehouse_name' => $detail->purchase->warehouse->name ?? '',
+            'quantity' => $detail->quantity,
+            'batch_no' => $detail->batch_no,
+            'expiry_date' => $detail->expiry_date,
+            'total' => $detail->total,
+        ];
+    });
 
-            if ($detail->product_variant_id) {
-                $productsVariants = ProductVariant::where('product_id', $detail->product_id)
-                    ->where('id', $detail->product_variant_id)->first();
-                $product_name = '['.$productsVariants->name.']'.$detail['product']['name'];
-            } else {
-                $product_name = $detail['product']['name'];
-            }
+    // SALES HISTORY
+    $sales = SaleDetail::with([
+        'sale.client',
+        'sale.warehouse',
+        'product'
+    ])
+    ->where('product_id', $id)
+    ->orderByDesc('id')
+    ->get()
+    ->map(function ($detail) {
 
-            $sales[] = [
-                'date' => $detail->date,
-                'Ref' => $detail->sale->Ref ?? '',
-                'sale_id' => $detail->sale->id ?? null,
-                'client_name' => $detail->sale['client']->name ?? '',
-                'unit_sale' => $unit ? $unit->ShortName : '',
-                'warehouse_name' => $detail->sale['warehouse']->name ?? '',
-                'quantity' => $detail->quantity.' '.($unit ? $unit->ShortName : ''),
-                'batch_no' => $detail->batch_no ?? null,
-                'expiry_date' => $detail->expiry_date ?? null,
-                'total' => $detail->total,
-                'product_name' => $product_name,
-            ];
-        }
+        return [
+            'date' => $detail->sale->date ?? null,
+            'Ref' => $detail->sale->Ref ?? '',
+            'sale_id' => $detail->sale_id,
+            'client_name' => $detail->sale->client->name ?? '',
+            'warehouse_name' => $detail->sale->warehouse->name ?? '',
+            'quantity' => $detail->quantity,
+            'batch_no' => $detail->batch_no,
+            'expiry_date' => $detail->expiry_date,
+            'total' => $detail->total,
+        ];
+    });
 
-        $purchasesRaw = PurchaseDetail::with('product', 'purchase', 'purchase.provider', 'purchase.warehouse')
-            ->where('product_id', $id)
-            ->orderBy('id', 'desc')
-            ->get();
+    $product = Product::findOrFail($id);
 
-        $purchases = [];
-        foreach ($purchasesRaw as $detail) {
-            // unit resolution for purchase
-            $unit = null;
-            if ($detail->purchase_unit_id !== null) {
-                $unit = Unit::where('id', $detail->purchase_unit_id)->first();
-            } else {
-                $product_unit_purchase_id = Product::with('unitSale')->where('id', $detail->product_id)->first();
-                if (! empty($product_unit_purchase_id['unitSale'])) {
-                    $unit = Unit::where('id', $product_unit_purchase_id['unitSale']->id)->first();
-                }
-            }
-
-            if ($detail->product_variant_id) {
-                $productsVariants = ProductVariant::where('product_id', $detail->product_id)
-                    ->where('id', $detail->product_variant_id)->first();
-                $product_name = '['.$productsVariants->name.']'.$detail['product']['name'];
-            } else {
-                $product_name = $detail['product']['name'];
-            }
-
-            $purchases[] = [
-                'date' => $detail->purchase->date ?? null,
-                'Ref' => $detail->purchase->Ref ?? '',
-                'purchase_id' => $detail->purchase->id ?? null,
-                'provider_name' => $detail->purchase['provider']->name ?? '',
-                'unit_purchase' => $unit ? $unit->ShortName : '',
-                'warehouse_name' => $detail->purchase['warehouse']->name ?? '',
-                'quantity' => $detail->quantity.' '.($unit ? $unit->ShortName : ''),
-                'batch_no' => $detail->batch_no ?? null,
-                'expiry_date' => $detail->expiry_date ?? null,
-                'total' => $detail->total,
-                'product_name' => $product_name,
-            ];
-        }
-
-        $product = Product::find($id);
-
-        return view('products.details', compact('sales', 'purchases', 'product'));
-    }
-
+    return response()->json([
+        'product' => $product,
+        'purchases' => $purchases,
+        'sales' => $sales
+    ]);
+}
     // -------------- Store new  Product  ---------------\\
 
     public function store(Request $request)

@@ -217,62 +217,62 @@ Route::group(['middleware' => ['web', 'auth:web', 'Is_Active', 'request.safety']
         }
     });
 
-    // Ensure legacy direct product details URL redirects to the server-rendered page
-    Route::get('/products/{id}/details', function ($id) {
-        return redirect('/app/products/' . $id . '/details');
-    })->whereNumber('id');
+    // // Ensure legacy direct product details URL redirects to the server-rendered page
+    // Route::get('/products/{id}/details', function ($id) {
+    //     return redirect('/app/products/' . $id . '/details');
+    // })->whereNumber('id');
 
-    // Product details page (server-rendered) showing orders and purchases for a product
-    Route::get('/app/products/{id}/details', [App\Http\Controllers\ProductsController::class, 'detailsPage'])->name('products.details');
+    // // Product details page (server-rendered) showing orders and purchases for a product
+    // Route::get('/app/products/{id}/details', [App\Http\Controllers\ProductsController::class, 'detailsPage'])->name('products.details');
 
-    // Temporary debug route (no auth) to render product details without middleware checks.
-    // NOTE: placed BEFORE the SPA catch-all so it can be reached for diagnostics.
-    // REMOVE THIS IN PRODUCTION.
-    Route::get('/debug/products/{id}/details', function ($id) {
-        $salesRaw = App\Models\SaleDetail::with('product', 'sale', 'sale.client', 'sale.warehouse')
-            ->where('product_id', $id)
-            ->orderBy('id', 'desc')
-            ->get();
+    // // Temporary debug route (no auth) to render product details without middleware checks.
+    // // NOTE: placed BEFORE the SPA catch-all so it can be reached for diagnostics.
+    // // REMOVE THIS IN PRODUCTION.
+    // Route::get('/debug/products/{id}/details', function ($id) {
+    //     $salesRaw = App\Models\SaleDetail::with('product', 'sale', 'sale.client', 'sale.warehouse')
+    //         ->where('product_id', $id)
+    //         ->orderBy('id', 'desc')
+    //         ->get();
 
-        $sales = [];
-        foreach ($salesRaw as $detail) {
-            $sales[] = [
-                'date' => $detail->date,
-                'Ref' => $detail->sale->Ref ?? '',
-                'sale_id' => $detail->sale->id ?? null,
-                'client_name' => $detail->sale['client']->name ?? '',
-                'warehouse_name' => $detail->sale['warehouse']->name ?? '',
-                'quantity' => $detail->quantity,
-                'batch_no' => $detail->batch_no ?? null,
-                'expiry_date' => $detail->expiry_date ?? null,
-                'total' => $detail->total,
-            ];
-        }
+    //     $sales = [];
+    //     foreach ($salesRaw as $detail) {
+    //         $sales[] = [
+    //             'date' => $detail->date,
+    //             'Ref' => $detail->sale->Ref ?? '',
+    //             'sale_id' => $detail->sale->id ?? null,
+    //             'client_name' => $detail->sale['client']->name ?? '',
+    //             'warehouse_name' => $detail->sale['warehouse']->name ?? '',
+    //             'quantity' => $detail->quantity,
+    //             'batch_no' => $detail->batch_no ?? null,
+    //             'expiry_date' => $detail->expiry_date ?? null,
+    //             'total' => $detail->total,
+    //         ];
+    //     }
 
-        $purchasesRaw = App\Models\PurchaseDetail::with('product', 'purchase', 'purchase.provider', 'purchase.warehouse')
-            ->where('product_id', $id)
-            ->orderBy('id', 'desc')
-            ->get();
+    //     $purchasesRaw = App\Models\PurchaseDetail::with('product', 'purchase', 'purchase.provider', 'purchase.warehouse')
+    //         ->where('product_id', $id)
+    //         ->orderBy('id', 'desc')
+    //         ->get();
 
-        $purchases = [];
-        foreach ($purchasesRaw as $detail) {
-            $purchases[] = [
-                'date' => $detail->purchase->date ?? null,
-                'Ref' => $detail->purchase->Ref ?? '',
-                'purchase_id' => $detail->purchase->id ?? null,
-                'provider_name' => $detail->purchase['provider']->name ?? '',
-                'warehouse_name' => $detail->purchase['warehouse']->name ?? '',
-                'quantity' => $detail->quantity,
-                'batch_no' => $detail->batch_no ?? null,
-                'expiry_date' => $detail->expiry_date ?? null,
-                'total' => $detail->total,
-            ];
-        }
+    //     $purchases = [];
+    //     foreach ($purchasesRaw as $detail) {
+    //         $purchases[] = [
+    //             'date' => $detail->purchase->date ?? null,
+    //             'Ref' => $detail->purchase->Ref ?? '',
+    //             'purchase_id' => $detail->purchase->id ?? null,
+    //             'provider_name' => $detail->purchase['provider']->name ?? '',
+    //             'warehouse_name' => $detail->purchase['warehouse']->name ?? '',
+    //             'quantity' => $detail->quantity,
+    //             'batch_no' => $detail->batch_no ?? null,
+    //             'expiry_date' => $detail->expiry_date ?? null,
+    //             'total' => $detail->total,
+    //         ];
+    //     }
 
-        $product = App\Models\Product::find($id);
+    //     $product = App\Models\Product::find($id);
 
-        return view('products.details', compact('sales', 'purchases', 'product'));
-    });
+    //     return view('products.details', compact('sales', 'purchases', 'product'));
+    // });
 
     Route::get('/{vue?}',
         function () {

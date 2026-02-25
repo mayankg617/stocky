@@ -110,8 +110,7 @@
             <a
               v-b-tooltip.hover
               title="Order Details"
-              :href="`/app/products/${props.row.id}/details`"
-              @click.prevent="gotoDetails(props.row.id)"
+              @click="gotoDetails(props.row.id)"
               class="cursor-pointer "
             >
              <i class="i-Box-Close text-20 text-primary"></i>
@@ -220,40 +219,8 @@
         </div>
       </b-sidebar>
 
-      <!-- Order details modal -->
-      <b-modal ok-only ok-title="Close" size="lg" id="orderDetails" :title="$t('Order_Details')">
-        <div v-if="orderLoading" class="text-center my-3">
-          <div class="spinner spinner-primary"></div>
-        </div>
-
-        <div v-else>
-          <b-row>
-            <b-col md="6">
-              <div class="card">
-                <div class="card-body">
-                  <h6 class="card-title">{{ $t('Orders') }}</h6>
-                  <div v-if="Array.isArray(orderDetails.orders) && orderDetails.orders.length">
-                    <b-table small responsive :items="orderDetails.orders" :fields="orderTableFields('orders')"></b-table>
-                  </div>
-                  <div v-else class="text-muted">{{ $t('No_orders_found') }}</div>
-                </div>
-              </div>
-            </b-col>
-
-            <b-col md="6">
-              <div class="card">
-                <div class="card-body">
-                  <h6 class="card-title">{{ $t('Purchases') }}</h6>
-                  <div v-if="Array.isArray(orderDetails.purchases) && orderDetails.purchases.length">
-                    <b-table small responsive :items="orderDetails.purchases" :fields="orderTableFields('purchases')"></b-table>
-                  </div>
-                  <div v-else class="text-muted">{{ $t('No_purchases_found') }}</div>
-                </div>
-              </div>
-            </b-col>
-          </b-row>
-        </div>
-      </b-modal>
+     
+      
 
       <!-- Import modal (unchanged except safer handling) -->
       <b-modal ok-only ok-title="Cancel" size="md" id="importProducts" :title="$t('import_products')">
@@ -365,9 +332,10 @@ export default {
     can(p) { return this.currentUserPermissions && this.currentUserPermissions.includes(p); },
 
     gotoDetails(id) {
+      alert(id);
       // Force a full page navigation to the server-rendered product details
       if (!id) return;
-      window.location.href = `/app/products/${id}/details`;
+      window.location.href = `/products/${id}/details`;
     },
 
     // Return first line of a possibly multi-line string

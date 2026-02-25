@@ -10,7 +10,7 @@ use App\Http\Controllers\Api\Store\SettingsApiController;
 use App\Http\Controllers\Api\Store\SubscriberController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\ProductsController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -857,3 +857,9 @@ Route::get('adjustment_pdf/{id}', 'AdjustmentController@adjustment_pdf');
 Route::get('damage_pdf/{id}', 'DamageController@damage_pdf');
 
 // Route::get('/available-modules', 'ModuleSettingsController@get_modules_enabled');
+
+
+
+
+
+Route::get('products/{id}/details',[ProductsController::class, 'detailsPage']);
