@@ -2224,7 +2224,7 @@ const baseRoutes = [
     },
 
     {
-        path: "not_authorize",
+        path: "/not_authorize",
         name: "not_authorize",
         component: () =>
             import(

@@ -43,7 +43,14 @@ class EnforceApiTokenTimeout
             $session->logged_in_at = $loginAt ?? $now;
             $session->last_activity_at = $now;
             $session->revoked_at = null;
-            $session->save();
+            try {
+                $session->save();
+            } catch (\Illuminate\Database\QueryException $e) {
+                // If another process created the same session concurrently, ignore duplicate-key error.
+                if ($e->getCode() !== '23000') {
+                    throw $e;
+                }
+            }
 
             return $next($request);
         }
@@ -71,7 +78,14 @@ class EnforceApiTokenTimeout
         }
 
         if ($dirty) {
-            $session->save();
+            try {
+                $session->save();
+            } catch (\Illuminate\Database\QueryException $e) {
+                // Ignore duplicate-key race conditions when updating session record
+                if ($e->getCode() !== '23000') {
+                    throw $e;
+                }
+            }
         }
 
         return $next($request);

@@ -16,6 +16,9 @@ use App\Models\Product;
 use App\Models\product_warehouse;
 use App\Models\ProductVariant;
 use App\Models\Unit;
+use App\Models\SaleDetail;
+use App\Models\PurchaseDetail;
+use Illuminate\Support\Facades\Auth as FacadesAuth;
 use App\Models\User;
 use App\Models\UserWarehouse;
 use App\Models\Warehouse;
@@ -231,6 +234,99 @@ class ProductsController extends BaseController
             'products' => $data,
             'totalRows' => $totalRows,
         ]);
+    }
+
+    // -------------------- Product Orders & Purchases Details Page (server) -------------\\
+    public function detailsPage(Request $request, $id)
+    {
+        // authorize view access (use session/web guard user, not API guard)
+        $this->authorizeForUser($request->user() ?? auth()->user(), 'view', Product::class);
+
+        $salesRaw = SaleDetail::with('product', 'sale', 'sale.client', 'sale.warehouse')
+            ->where('product_id', $id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $sales = [];
+        foreach ($salesRaw as $detail) {
+            // unit resolution
+            $unit = null;
+            if ($detail->sale_unit_id !== null) {
+                $unit = Unit::where('id', $detail->sale_unit_id)->first();
+            } else {
+                $product_unit_sale_id = Product::with('unitSale')->where('id', $detail->product_id)->first();
+                if (! empty($product_unit_sale_id['unitSale'])) {
+                    $unit = Unit::where('id', $product_unit_sale_id['unitSale']->id)->first();
+                }
+            }
+
+            if ($detail->product_variant_id) {
+                $productsVariants = ProductVariant::where('product_id', $detail->product_id)
+                    ->where('id', $detail->product_variant_id)->first();
+                $product_name = '['.$productsVariants->name.']'.$detail['product']['name'];
+            } else {
+                $product_name = $detail['product']['name'];
+            }
+
+            $sales[] = [
+                'date' => $detail->date,
+                'Ref' => $detail->sale->Ref ?? '',
+                'sale_id' => $detail->sale->id ?? null,
+                'client_name' => $detail->sale['client']->name ?? '',
+                'unit_sale' => $unit ? $unit->ShortName : '',
+                'warehouse_name' => $detail->sale['warehouse']->name ?? '',
+                'quantity' => $detail->quantity.' '.($unit ? $unit->ShortName : ''),
+                'batch_no' => $detail->batch_no ?? null,
+                'expiry_date' => $detail->expiry_date ?? null,
+                'total' => $detail->total,
+                'product_name' => $product_name,
+            ];
+        }
+
+        $purchasesRaw = PurchaseDetail::with('product', 'purchase', 'purchase.provider', 'purchase.warehouse')
+            ->where('product_id', $id)
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $purchases = [];
+        foreach ($purchasesRaw as $detail) {
+            // unit resolution for purchase
+            $unit = null;
+            if ($detail->purchase_unit_id !== null) {
+                $unit = Unit::where('id', $detail->purchase_unit_id)->first();
+            } else {
+                $product_unit_purchase_id = Product::with('unitSale')->where('id', $detail->product_id)->first();
+                if (! empty($product_unit_purchase_id['unitSale'])) {
+                    $unit = Unit::where('id', $product_unit_purchase_id['unitSale']->id)->first();
+                }
+            }
+
+            if ($detail->product_variant_id) {
+                $productsVariants = ProductVariant::where('product_id', $detail->product_id)
+                    ->where('id', $detail->product_variant_id)->first();
+                $product_name = '['.$productsVariants->name.']'.$detail['product']['name'];
+            } else {
+                $product_name = $detail['product']['name'];
+            }
+
+            $purchases[] = [
+                'date' => $detail->purchase->date ?? null,
+                'Ref' => $detail->purchase->Ref ?? '',
+                'purchase_id' => $detail->purchase->id ?? null,
+                'provider_name' => $detail->purchase['provider']->name ?? '',
+                'unit_purchase' => $unit ? $unit->ShortName : '',
+                'warehouse_name' => $detail->purchase['warehouse']->name ?? '',
+                'quantity' => $detail->quantity.' '.($unit ? $unit->ShortName : ''),
+                'batch_no' => $detail->batch_no ?? null,
+                'expiry_date' => $detail->expiry_date ?? null,
+                'total' => $detail->total,
+                'product_name' => $product_name,
+            ];
+        }
+
+        $product = Product::find($id);
+
+        return view('products.details', compact('sales', 'purchases', 'product'));
     }
 
     // -------------- Store new  Product  ---------------\\
