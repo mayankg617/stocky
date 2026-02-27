@@ -48,15 +48,20 @@
               <thead>
                 <tr>
                   <th>Product Date</th>
-                  <th>Product Name</th>
+                  <th>Supplier</th>
                   <th>Quantity</th>
+                  <th>Batch Number</th>
+                  <th>Expiry Date</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="purchase in purchases" :key="purchase.purchase_id">
               <td>{{ purchase.date }}</td>
               <td>{{ purchase.provider_name }}</td>
+              <td>{{ purchase.quantity }}</td>
               <td>{{ purchase.batch_no }}</td>
+              <td>{{ purchase.expiry_date }}</td>
+              
             </tr>
               </tbody>
             </table>

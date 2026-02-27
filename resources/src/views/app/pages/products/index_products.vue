@@ -115,6 +115,15 @@
             >
              <i class="i-Box-Close text-20 text-primary"></i>
             </a>
+
+            <a
+              v-b-tooltip.hover
+              title="Sales Details"
+              @click="gotoSalesDetails(props.row.id)"
+              class="cursor-pointer "
+            >
+             <i class="i-Shopping-Cart text-20 text-primary"></i>
+            </a>
           </span>
 
           <!-- image (own slot, no html column flag) -->
@@ -308,7 +317,7 @@ export default {
         { label: this.$t("Code"), field: "code", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Brand"), field: "brand", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Categorie"), field: "category", tdClass: "text-left", thClass: "text-left" },
-        { label: this.$t("Cost"), field: "cost", tdClass: "text-left pre", thClass: "text-left" },
+       // { label: this.$t("Cost"), field: "cost", tdClass: "text-left pre", thClass: "text-left" },
         { label: this.$t("Price"), field: "price", tdClass: "text-left pre", thClass: "text-left" },
         { label: this.$t("Unit"), field: "unit", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Quantity"), field: "quantity", tdClass: "text-left", thClass: "text-left" },
