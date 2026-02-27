@@ -19,34 +19,29 @@
             <h3>{{ product.name }}</h3>
           </b-col>
 
-         
-         
-
-            <!-- product combo -->
-            <b-col md="12" class="mt-4">
-            <h3>Purchases</h3>
+          <b-col md="12" class="mt-4">
+            <h3>Sales</h3>
             <table class="table table-hover table-bordered table-md">
-              <thead>
+               <thead>
                 <tr>
-                  <th>Product Date</th>
-                  <th>Supplier</th>
+                  <th>Product Code</th>
+                  <th>Product Name</th>
                   <th>Quantity</th>
-                  <th>Batch Number</th>
-                  <th>Expiry Date</th>
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="purchase in purchases" :key="purchase.purchase_id">
-              <td>{{ purchase.date }}</td>
-              <td>{{ purchase.provider_name }}</td>
-              <td>{{ purchase.quantity }}</td>
-              <td>{{ purchase.batch_no }}</td>
-              <td>{{ purchase.expiry_date }}</td>
-              
+                <tr v-for="sale in sales" :key="sale.sale_id">
+              <td>{{ sale.date }}</td>
+              <td>{{ sale.client_name }}</td>
+              <td>{{ sale.quantity }}</td>
             </tr>
+               
               </tbody>
             </table>
           </b-col>
+         
+
+           
 
         
           
@@ -71,7 +66,7 @@ export default {
   data() {
     return {
       product: {},
-      purchases: []
+      sales: []
     };
   },
 
@@ -84,7 +79,7 @@ export default {
       axios.get(`/products/${this.$route.params.id}/details`)
         .then(res => {
           this.product = res.data.product;
-          this.purchases = res.data.purchases;
+          this.sales = res.data.sales;
         });
     }
   }

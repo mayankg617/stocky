@@ -2212,6 +2212,14 @@ const baseRoutes = [
                 path: "/products/:id/details",
                 name: "product_details",
                 component: () => import("./views/app/pages/products/ProductPurchaseDetails.vue")
+            },
+
+             // Product sales details
+
+            {
+                path: "/products/:id/sales-details",
+                name: "product_sales_details",
+                component: () => import("./views/app/pages/products/ProductSalesDetails.vue")
             }
         ]
     },

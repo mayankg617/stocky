@@ -260,10 +260,24 @@ public function detailsPage(Request $request, $id)
             'warehouse_name' => $detail->purchase->warehouse->name ?? '',
             'quantity' => $detail->quantity,
             'batch_no' => $detail->batch_no,
-            'expiry_date' => $detail->expiry_date,
+            'expiry_date' =>  date('Y-m-d H:i:s', strtotime($detail->expiry_date)),
             'total' => $detail->total,
         ];
     });
+
+    $product = Product::findOrFail($id);
+
+    return response()->json([
+        'product' => $product,
+        'purchases' => $purchases
+    ]);
+}
+   
+public function salesDetailsPage(Request $request, $id)
+{
+    $this->authorizeForUser($request->user('api'), 'view', Product::class);
+
+   
 
     // SALES HISTORY
     $sales = SaleDetail::with([
@@ -293,11 +307,12 @@ public function detailsPage(Request $request, $id)
 
     return response()->json([
         'product' => $product,
-        'purchases' => $purchases,
         'sales' => $sales
     ]);
 }
-    // -------------- Store new  Product  ---------------\\
+
+
+// -------------- Store new  Product  ---------------\\
 
     public function store(Request $request)
     {

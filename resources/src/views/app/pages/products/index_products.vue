@@ -115,11 +115,10 @@
             >
              <i class="i-Box-Close text-20 text-primary"></i>
             </a>
-
             <a
               v-b-tooltip.hover
               title="Sales Details"
-              @click="gotoSalesDetails(props.row.id)"
+              @click="Show_Sales_Details(props.row.id)"
               class="cursor-pointer "
             >
              <i class="i-Shopping-Cart text-20 text-primary"></i>
@@ -317,7 +316,7 @@ export default {
         { label: this.$t("Code"), field: "code", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Brand"), field: "brand", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Categorie"), field: "category", tdClass: "text-left", thClass: "text-left" },
-       // { label: this.$t("Cost"), field: "cost", tdClass: "text-left pre", thClass: "text-left" },
+        { label: this.$t("Cost"), field: "cost", tdClass: "text-left pre", thClass: "text-left" },
         { label: this.$t("Price"), field: "price", tdClass: "text-left pre", thClass: "text-left" },
         { label: this.$t("Unit"), field: "unit", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Quantity"), field: "quantity", tdClass: "text-left", thClass: "text-left" },
@@ -341,12 +340,15 @@ export default {
     can(p) { return this.currentUserPermissions && this.currentUserPermissions.includes(p); },
 
     gotoDetails(id) {
-      alert(id);
+    
       // Force a full page navigation to the server-rendered product details
       if (!id) return;
       window.location.href = `/products/${id}/details`;
     },
-
+Show_Sales_Details(id) {
+      if (!id) return;
+      window.location.href = `/products/${id}/sales-details`;
+    },
     // Return first line of a possibly multi-line string
     firstLine(val) {
       if (val === null || val === undefined) return '';

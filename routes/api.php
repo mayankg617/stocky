@@ -863,3 +863,4 @@ Route::get('damage_pdf/{id}', 'DamageController@damage_pdf');
 
 
 Route::get('products/{id}/details',[ProductsController::class, 'detailsPage']);
+Route::get('products/{id}/sales-details',[ProductsController::class, 'salesDetailsPage']);
