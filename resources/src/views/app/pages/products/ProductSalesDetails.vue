@@ -24,8 +24,8 @@
             <table class="table table-hover table-bordered table-md">
                <thead>
                 <tr>
-                  <th>Product Code</th>
-                  <th>Product Name</th>
+                  <th>Date</th>
+                  <th>Client Name</th>
                   <th>Quantity</th>
                 </tr>
               </thead>
@@ -76,7 +76,7 @@ export default {
 
   methods: {
     fetchDetails() {
-      axios.get(`/products/${this.$route.params.id}/details`)
+      axios.get(`/products/${this.$route.params.id}/sales-details`)
         .then(res => {
           this.product = res.data.product;
           this.sales = res.data.sales;

@@ -316,7 +316,7 @@ export default {
         { label: this.$t("Code"), field: "code", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Brand"), field: "brand", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Categorie"), field: "category", tdClass: "text-left", thClass: "text-left" },
-        { label: this.$t("Cost"), field: "cost", tdClass: "text-left pre", thClass: "text-left" },
+       // { label: this.$t("Cost"), field: "cost", tdClass: "text-left pre", thClass: "text-left" },
         { label: this.$t("Price"), field: "price", tdClass: "text-left pre", thClass: "text-left" },
         { label: this.$t("Unit"), field: "unit", tdClass: "text-left", thClass: "text-left" },
         { label: this.$t("Quantity"), field: "quantity", tdClass: "text-left", thClass: "text-left" },
