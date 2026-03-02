@@ -226,6 +226,7 @@
                         <tr>
                           <th scope="col">#</th>
                           <th scope="col">{{$t('ProductName')}}</th>
+                          <th scope="col">Purchase Name</th>
                           <th scope="col">{{$t('Net_Unit_Cost')}}</th>
                           <th scope="col">{{$t('Current_stock')}}</th>
                           <th scope="col">{{$t('Qty')}}</th>
@@ -251,6 +252,12 @@
                             <span class="badge badge-success">{{detail.name}}</span>
                             
                           </td>
+                          <td>
+                          <b-form-input
+                            v-model="detail.purchase_name"
+                            placeholder="Enter Brand Name">
+                          </b-form-input>
+                        </td>
                           <td
                           >{{currentUser.currency}} {{formatNumber(detail.Net_cost, 3)}}</td>
                           <td>
@@ -701,6 +708,7 @@ export default {
         DiscountNet: "",
         discount_Method: "",
         name: "",
+        purchase_name: "",
         unitPurchase: "",
         purchase_unit_id:"",
         fix_stock:"",
@@ -962,7 +970,7 @@ export default {
     // Submit Search Products
 
     SearchProduct(result) {
-      this.product = {};
+      this.product = { ...this.product };
       if (
         this.details.length > 0 &&
         this.details.some(detail => detail.code === result.code)
@@ -1236,6 +1244,7 @@ export default {
         this.product.discount_Method    = response.data.discount_method;
         this.product.product_id = response.data.id;
         this.product.name = response.data.name;
+        this.product.purchase_name = response.data.name;
         this.product.Net_cost = response.data.Net_cost;
         this.product.Unit_cost = response.data.Unit_cost;
         this.product.taxe = response.data.tax_cost;
