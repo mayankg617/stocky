@@ -252,14 +252,18 @@ class PurchasesController extends BaseController
 
                             // Insert batch record for traceability
                             \DB::table('product_batches')->insert([
-                                'product_id' => $value['product_id'],
-                                'purchase_id' => $order->id,
-                                'batch_no' => isset($value['batch_no']) ? $value['batch_no'] : null,
-                                'expiry_date' => isset($value['expiry_date']) ? $value['expiry_date'] : null,
-                                'quantity' => $addedQty,
-                                'created_at' => Carbon::now(),
-                                'updated_at' => Carbon::now(),
-                            ]);
+                        'product_id'  => $value['product_id'],
+                        'warehouse_id'=> $order->warehouse_id,   // keep warehouse link
+                        'purchase_id' => $order->id,
+                        'batch_no'    => $value['batch_no'] ?? null,
+                        'expiry_date' => $value['expiry_date'] ?? null,
+
+                        'qte'         => $addedQty,   // ⭐ IMPORTANT (THIS FIXES DROPDOWN)
+                        'quantity'    => $addedQty,
+
+                        'created_at'  => now(),
+                        'updated_at'  => now(),
+                    ]);
                         }
 
                     } else {
@@ -275,6 +279,27 @@ class PurchasesController extends BaseController
                                 $product_warehouse->qte += $value['quantity'] * $unit->operator_value;
                             }
                             $product_warehouse->save();
+
+                            // ✅ INSERT batch for non-variant products
+if (!empty($value['batch_no']) || !empty($value['expiry_date'])) {
+
+    if ($unit->operator == '/') {
+        $addedQty = $value['quantity'] / $unit->operator_value;
+    } else {
+        $addedQty = $value['quantity'] * $unit->operator_value;
+    }
+
+    \DB::table('product_batches')->insert([
+        'product_id'   => $value['product_id'],
+        'warehouse_id' => $order->warehouse_id,
+        'purchase_id'  => $order->id,
+        'batch_no'     => $value['batch_no'] ?? null,
+        'expiry_date'  => $value['expiry_date'] ?? null,
+        'quantity'     => $addedQty,
+        'created_at'   => now(),
+        'updated_at'   => now(),
+    ]);
+}
                         }
                     }
                 }
@@ -928,15 +953,19 @@ class PurchasesController extends BaseController
         $this->authorizeForUser($request->user('api'), 'view', Purchase::class);
 
         $batches = \DB::table('product_batches')
-            ->join('purchases', 'product_batches.purchase_id', '=', 'purchases.id')
+            ->leftjoin('purchases', 'product_batches.purchase_id', '=', 'purchases.id')
             ->where('product_batches.product_id', $product_id)
-            ->where('purchases.warehouse_id', $warehouse_id)
+            ->where(function ($q) use ($warehouse_id) {
+    $q->where('purchases.warehouse_id', $warehouse_id)
+      ->orWhere('product_batches.warehouse_id', $warehouse_id);
+})
             ->whereRaw('product_batches.quantity > 0')
             ->whereNull('purchases.deleted_at')
-            ->whereNull('product_batches.deleted_at')
+           // ->whereNull('product_batches.deleted_at')
             ->select('product_batches.id', 'product_batches.batch_no', 'product_batches.expiry_date', 'product_batches.quantity')
             ->orderByRaw("CASE WHEN product_batches.expiry_date IS NULL THEN 1 ELSE 0 END, product_batches.expiry_date ASC")
             ->get();
+           // print_r($batches);exit;
 
         return response()->json(['batches' => $batches]);
     }

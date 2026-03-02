@@ -281,10 +281,10 @@
                   <b-col md="6" class="mb-3">
                     <validation-provider
                       name="Name"
-                      :rules="{required:true , min:3 , max:55}"
+                      :rules="{optional:true , min:3 , max:55}"
                       v-slot="validationContext"
                     >
-                      <b-form-group :label="$t('HSN CODE') + ' *'">
+                      <b-form-group :label="$t('HSN CODE') + ' '">
                         <b-form-input
                           :state="getValidationState(validationContext)"
                           aria-describedby="Name-feedback"

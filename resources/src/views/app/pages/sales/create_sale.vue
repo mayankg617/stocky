@@ -1,6 +1,6 @@
 <template>
   <div class="main-content">
-    <breadcumb :page="$t('AddSale')" :folder="$t('ListSales')"/>
+    <breadcumb :page="$t('AddSale')" :folder="$t('ListSales')" />
     <div v-if="isLoading" class="loading_page spinner spinner-primary mr-3"></div>
 
     <validation-observer ref="create_sale" v-if="!isLoading">
@@ -11,31 +11,18 @@
               <b-row>
 
                 <b-modal hide-footer id="open_scan" size="md" title="Barcode Scanner">
-                  <qrcode-scanner
-                    :qrbox="250" 
-                    :fps="10" 
-                    style="width: 100%; height: calc(100vh - 56px);"
-                    @result="onScan"
-                  />
+                  <qrcode-scanner :qrbox="250" :fps="10" style="width: 100%; height: calc(100vh - 56px);"
+                    @result="onScan" />
                 </b-modal>
 
                 <!-- date  -->
                 <b-col lg="4" md="4" sm="12" class="mb-3">
-                  <validation-provider
-                    name="date"
-                    :rules="{ required: true}"
-                    v-slot="validationContext"
-                  >
+                  <validation-provider name="date" :rules="{ required: true }" v-slot="validationContext">
                     <b-form-group :label="$t('date') + ' ' + '*'">
-                      <b-form-input
-                        :state="getValidationState(validationContext)"
-                        aria-describedby="date-feedback"
-                        type="date"
-                        v-model="sale.date"
-                      ></b-form-input>
-                      <b-form-invalid-feedback
-                        id="OrderTax-feedback"
-                      >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                      <b-form-input :state="getValidationState(validationContext)" aria-describedby="date-feedback"
+                        type="date" v-model="sale.date"></b-form-input>
+                      <b-form-invalid-feedback id="OrderTax-feedback">{{ validationContext.errors[0]
+                        }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
@@ -43,27 +30,17 @@
 
                 <!-- Customer -->
                 <b-col lg="4" md="4" sm="12" class="mb-3">
-                  <validation-provider name="Customer" :rules="{ required: true}">
+                  <validation-provider name="Customer" :rules="{ required: true }">
                     <b-form-group slot-scope="{ valid, errors }" :label="$t('Customer') + ' ' + '*'">
                       <b-input-group class="category-input-group">
-                        <v-select
-                          :class="{'is-invalid': !!errors.length}"
-                          :state="errors[0] ? false : (valid ? true : null)"
-                          v-model="selectedClientId"
-                          @input="Selected_customer"
-                          :reduce="label => label.value"
-                          :placeholder="$t('Choose_Customer')"
-                          :options="clients.map(clients => ({label: clients.name, value: clients.id}))"
-                        />
+                        <v-select :class="{ 'is-invalid': !!errors.length }"
+                          :state="errors[0] ? false : (valid ? true : null)" v-model="selectedClientId"
+                          @input="Selected_customer" :reduce="label => label.value" :placeholder="$t('Choose_Customer')"
+                          :options="clients.map(clients => ({ label: clients.name, value: clients.id }))" />
                         <b-input-group-append
-                          v-if="currentUserPermissions && currentUserPermissions.includes('Customers_add')"
-                        >
-                          <b-button
-                            variant="primary"
-                            @click="Quick_Add_Client"
-                            :title="$t('Quick_Add_Customer')"
-                            class="category-add-btn"
-                          >
+                          v-if="currentUserPermissions && currentUserPermissions.includes('Customers_add')">
+                          <b-button variant="primary" @click="Quick_Add_Client" :title="$t('Quick_Add_Customer')"
+                            class="category-add-btn">
                             <i class="i-Add"></i>
                           </b-button>
                         </b-input-group-append>
@@ -75,124 +52,100 @@
 
                 <!-- warehouse -->
                 <b-col lg="4" md="4" sm="12" class="mb-3">
-                  <validation-provider name="warehouse" :rules="{ required: true}">
+                  <validation-provider name="warehouse" :rules="{ required: true }">
                     <b-form-group slot-scope="{ valid, errors }" :label="$t('warehouse') + ' ' + '*'">
-                      <v-select
-                        :class="{'is-invalid': !!errors.length}"
-                        :state="errors[0] ? false : (valid ? true : null)"
-                        :disabled="details.length > 0"
-                        @input="Selected_Warehouse"
-                        v-model="sale.warehouse_id"
-                        :reduce="label => label.value"
+                      <v-select :class="{ 'is-invalid': !!errors.length }"
+                        :state="errors[0] ? false : (valid ? true : null)" :disabled="details.length > 0"
+                        @input="Selected_Warehouse" v-model="sale.warehouse_id" :reduce="label => label.value"
                         :placeholder="$t('Choose_Warehouse')"
-                        :options="warehouses.map(warehouses => ({label: warehouses.name, value: warehouses.id}))"
-                      />
+                        :options="warehouses.map(warehouses => ({ label: warehouses.name, value: warehouses.id }))" />
                       <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
-                   <!-- Product -->
+                <!-- Product -->
                 <b-col md="12" class="mb-5">
-                  <h6>{{$t('ProductName')}}</h6>
-                 
+                  <h6>{{ $t('ProductName') }}</h6>
+
                   <div id="autocomplete" class="autocomplete">
                     <div class="input-with-icon">
                       <img src="/assets_setup/scan.png" alt="Scan" class="scan-icon" @click="showModal">
-                    <input 
-                     :placeholder="$t('Scan_Search_Product_by_Code_Name')"
-                       @input='e => search_input = e.target.value' 
-                      @keyup="search(search_input)"
-                      @focus="handleFocus"
-                      @blur="handleBlur"
-                      ref="product_autocomplete"
-                      class="autocomplete-input" />
+                      <input :placeholder="$t('Scan_Search_Product_by_Code_Name')"
+                        @input='e => search_input = e.target.value' @keyup="search(search_input)" @focus="handleFocus"
+                        @blur="handleBlur" ref="product_autocomplete" class="autocomplete-input" />
                     </div>
                     <ul class="autocomplete-result-list" v-show="focused">
-                      <li class="autocomplete-result" v-for="product_fil in product_filter" @mousedown="SearchProduct(product_fil)">{{getResultValue(product_fil)}}</li>
+                      <li class="autocomplete-result" v-for="product_fil in product_filter"
+                        @mousedown="SearchProduct(product_fil)">{{ getResultValue(product_fil) }}</li>
                     </ul>
-                </div>
+                  </div>
                 </b-col>
 
                 <!-- order products  -->
                 <b-col md="12" class="mb-4">
-                  <h5>{{$t('order_products')}} *</h5>
+                  <h5>{{ $t('order_products') }} *</h5>
                   <div class="table-responsive">
                     <table class="table table-hover">
                       <thead class="bg-gray-300">
                         <tr>
                           <th scope="col">#</th>
-                          <th scope="col">{{$t('ProductName')}}</th>
-                          <th scope="col">{{$t('Net_Unit_Price')}}</th>
-                          <th scope="col">{{$t('CurrentStock')}}</th>
-                          <th scope="col">{{$t('Qty')}}</th>
-                          <th scope="col">{{$t('Discount')}}</th>
-                          <th scope="col">{{$t('Tax')}}</th>
-                          <th scope="col">{{$t('SubTotal')}}</th>
+                          <th scope="col">{{ $t('ProductName') }}</th>
+                          <th scope="col">{{ $t('Net_Unit_Price') }}</th>
+                          <th scope="col">{{ $t('CurrentStock') }}</th>
+                          <th scope="col">{{ $t('Qty') }}</th>
+                          <th scope="col">{{ $t('BatchNumber') }}</th>
+                          <th scope="col">{{ $t('ExpiryDate') }}</th>
+                          <th scope="col">{{ $t('Discount') }}</th>
+                          <th scope="col">{{ $t('GST') }}</th>
+                          <th scope="col">{{ $t('SubTotal') }}</th>
                           <th scope="col" class="text-center">
                             <i class="i-Close-Window text-25"></i>
                           </th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-if="details.length <=0">
-                          <td colspan="9">{{$t('NodataAvailable')}}</td>
+                        <tr v-if="details.length <= 0">
+                          <td colspan="11">{{ $t('NodataAvailable') }}</td>
                         </tr>
-                        <tr v-for="detail  in details" >
-                          <td >{{detail.detail_id}}</td>
+                        <tr v-for="detail in details" :key="detail.detail_id">
+                          <td>{{ detail.detail_id }}</td>
                           <td>
-                            <span>{{detail.code}}</span>
+                            <span>{{ detail.code }}</span>
                             <br>
-                            <span class="badge badge-success">{{detail.name}}</span>
-                           
+                            <span class="badge badge-success">{{ detail.name }}</span>
+
                           </td>
                           <td>
                             <div class="d-flex align-items-center">
                               <div class="mr-2">
-                                <span>{{currentUser.currency}} {{formatNumber(detail.Net_price, 3)}}</span>
-                                <small
-                                  v-if="detail.min_price && detail.Net_price < detail.min_price"
-                                  class="text-danger d-block"
-                                >{{ $t('Price_below_min_not_allowed') }}</small>
+                                <span>{{ currentUser.currency }} {{ formatNumber(detail.Net_price, 3) }}</span>
+                                <small v-if="detail.min_price && detail.Net_price < detail.min_price"
+                                  class="text-danger d-block">{{ $t('Price_below_min_not_allowed') }}</small>
                               </div>
-                              <v-select
-                                class="ml-2"
-                                :options="[
-                                  {label: $t('Retail Price'), value: 'retail'},
-                                  {label: $t('Wholesale Price'), value: 'wholesale'}
-                                ]"
-                                :reduce="opt => opt.value"
-                                v-model="detail.price_type"
-                                style="min-width: 160px"
-                                @input="val => onChangePriceType(detail, val)"
-                              />
+                              <v-select class="ml-2" :options="[
+                                { label: $t('Retail Price'), value: 'retail' },
+                                { label: $t('Wholesale Price'), value: 'wholesale' }
+                              ]" :reduce="opt => opt.value" v-model="detail.price_type" style="min-width: 160px"
+                                @input="val => onChangePriceType(detail, val)" />
                             </div>
                           </td>
                           <td>
                             <span class="badge badge-warning" v-if="detail.product_type == 'is_service'">----</span>
-                            <span class="badge badge-warning" v-else>{{detail.stock}} {{detail.unitSale}}</span>
+                            <span class="badge badge-warning" v-else>{{ detail.stock }} {{ detail.unitSale }}</span>
                           </td>
                           <td>
                             <div class="quantity">
                               <b-input-group>
                                 <b-input-group-prepend>
-                                  <span
-                                    class="btn btn-primary btn-sm"
-                                    @click="decrement(detail ,detail.detail_id)"
-                                  >-</span>
+                                  <span class="btn btn-primary btn-sm"
+                                    @click="decrement(detail, detail.detail_id)">-</span>
                                 </b-input-group-prepend>
-                                <input
-                                  class="form-control"
-                                  @keyup="Verified_Qty(detail,detail.detail_id)"
-                                  :min="0.00"
-                                  :max="detail.stock"
-                                  v-model.number="detail.quantity"
-                                >
+                                <input class="form-control" @keyup="Verified_Qty(detail, detail.detail_id)" :min="0.00"
+                                  :max="detail.stock" v-model.number="detail.quantity">
                                 <b-input-group-append>
-                                  <span
-                                    class="btn btn-primary btn-sm"
-                                    @click="increment(detail ,detail.detail_id)"
-                                  >+</span>
+                                  <span class="btn btn-primary btn-sm"
+                                    @click="increment(detail, detail.detail_id)">+</span>
                                 </b-input-group-append>
                               </b-input-group>
                             </div>
@@ -200,31 +153,58 @@
                           <!-- Batch selector -->
                           <td>
                             <div v-if="detail.batches && detail.batches.length">
-                              <v-select
-                                :options="detail.batches.map(b => ({ label: b.batch_no + ' (' + b.quantity + ')', value: b.id }))"
-                                :reduce="opt => opt.value"
-                                v-model="detail.batch_id"
-                                @input="onBatchSelected(detail)"
-                                placeholder="Select batch"
-                              />
+                              <b-form-select v-model="detail.batch_id" @change="onBatchSelected(detail)">
+                                <option :value="null">Select Batch</option>
+
+                                <option v-for="batch in detail.batches" :key="batch.id" :value="batch.id">
+                                  {{ batch.batch_no }} ({{ batch.quantity }} {{ detail.unitSale }}) - {{ batch.expiry_date }}
+                                </option>
+                              </b-form-select>
                             </div>
-                            <div v-else>--</div>
+
+                            <div v-else>
+                              --
+                            </div>
                           </td>
 
-                          <!-- Expiry date (auto-filled) -->
+                          <!-- Expiry date (disabled auto-filled) -->
                           <td>
-                            <div>
-                              <b-form-input type="date" v-model="detail.expiry_date" readonly></b-form-input>
-                            </div>
+                            <b-form-input type="date" v-model="detail.expiry_date" disabled></b-form-input>
                           </td>
-                          <td>{{currentUser.currency}} {{formatNumber(detail.DiscountNet * detail.quantity, 2)}}</td>
-                          <td>{{currentUser.currency}} {{formatNumber(detail.taxe  * detail.quantity, 2)}}</td>
-                          <td>{{currentUser.currency}} {{detail.subtotal.toFixed(2)}}</td>
-                          <td>
-                            <i v-if="currentUserPermissions && currentUserPermissions.includes('edit_product_sale')"
-                             @click="Modal_Updat_Detail(detail)" class="i-Edit text-25 text-success cursor-pointer"></i>
-                            <i @click="delete_Product_Detail(detail.detail_id)" class="i-Close-Window text-25 text-danger cursor-pointer"></i>
-                          </td>
+                          <!-- Discount -->
+<td>
+  <span>
+    {{ currentUser.currency }}
+    {{ formatNumber(detail.discount || 0, 2) }}
+  </span>
+</td>
+
+<!-- GST -->
+<td>
+  <span>
+    {{ currentUser.currency }}
+    {{ formatNumber((detail.taxe || 0) * (detail.quantity || 0), 2) }}
+  </span>
+</td>
+
+<!-- Subtotal -->
+<td>
+  <span class="font-weight-bold">
+    {{ currentUser.currency }}
+    {{ formatNumber(detail.subtotal || 0, 2) }}
+  </span>
+</td>
+
+<!-- Delete Button -->
+<td class="text-center">
+  <button
+    type="button"
+    class="btn btn-danger btn-sm"
+    @click="delete_Product_Detail(detail.detail_id)"
+  >
+    <i class="i-Close-Window"></i>
+  </button>
+</td>
                         </tr>
                       </tbody>
                     </table>
@@ -235,39 +215,39 @@
                   <table class="table table-striped table-sm">
                     <tbody>
                       <tr>
-                        <td class="bold">{{$t('OrderTax')}}</td>
+                        <td class="bold">{{ $t('OrderTax') }}</td>
                         <td>
-                          <span>{{currentUser.currency}} {{sale.TaxNet.toFixed(2)}} ({{formatNumber(sale.tax_rate,2)}} %)</span>
+                          <span>{{ currentUser.currency }} {{ sale.TaxNet.toFixed(2) }} ({{ formatNumber(sale.tax_rate, 2) }}
+                            %)</span>
                         </td>
                       </tr>
                       <tr>
-                        <td class="bold">{{$t('Discount')}}</td>
+                        <td class="bold">{{ $t('Discount') }}</td>
                         <td>
                           <!-- If percentage: show percent value AND discount amount; else amount only -->
                           <template v-if="String(sale.discount_Method || '2') === '1'">
-                            {{ formatNumber(sale.discount, 2) }}% ({{ currentUser.currency }} {{ getManualDiscountAmount().toFixed(2) }})
+                            {{ formatNumber(sale.discount, 2) }}% ({{ currentUser.currency }} {{
+                            getManualDiscountAmount().toFixed(2) }})
                           </template>
                           <template v-else>
-                            {{currentUser.currency}} {{getManualDiscountAmount().toFixed(2)}}
+                            {{ currentUser.currency }} {{ getManualDiscountAmount().toFixed(2) }}
                           </template>
                         </td>
                       </tr>
                       <tr v-if="discount_from_points && discount_from_points > 0">
-                        <td class="bold">{{$t('Discount_from_Points')}}</td>
-                        <td>{{currentUser.currency}} {{discount_from_points.toFixed(2)}}</td>
+                        <td class="bold">{{ $t('Discount_from_Points') }}</td>
+                        <td>{{ currentUser.currency }} {{ discount_from_points.toFixed(2) }}</td>
                       </tr>
                       <tr>
-                        <td class="bold">{{$t('Shipping')}}</td>
-                        <td>{{currentUser.currency}} {{sale.shipping.toFixed(2)}}</td>
+                        <td class="bold">{{ $t('Shipping') }}</td>
+                        <td>{{ currentUser.currency }} {{ sale.shipping.toFixed(2) }}</td>
                       </tr>
                       <tr>
                         <td>
-                          <span class="font-weight-bold">{{$t('Total')}}</span>
+                          <span class="font-weight-bold">{{ $t('Total') }}</span>
                         </td>
                         <td>
-                          <span
-                            class="font-weight-bold"
-                          >{{currentUser.currency}} {{GrandTotal.toFixed(2)}}</span>
+                          <span class="font-weight-bold">{{ currentUser.currency }} {{ GrandTotal.toFixed(2) }}</span>
                         </td>
                       </tr>
                     </tbody>
@@ -275,90 +255,63 @@
                 </div>
 
                 <!-- Order Tax  -->
-                <b-col lg="4" md="4" sm="12" class="mb-3" v-if="currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
-                  <validation-provider
-                    name="Order Tax"
-                    :rules="{ regex: /^\d*\.?\d*$/}"
-                    v-slot="validationContext"
-                  >
+                <b-col lg="4" md="4" sm="12" class="mb-3"
+                  v-if="currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
+                  <validation-provider name="Order Tax" :rules="{ regex: /^\d*\.?\d*$/ }" v-slot="validationContext">
                     <b-form-group :label="$t('OrderTax')">
                       <b-input-group append="%">
-                        <b-form-input
-                          :state="getValidationState(validationContext)"
-                          aria-describedby="OrderTax-feedback"
-                          label="Order Tax"
-                          v-model.number="sale.tax_rate"
-                          @keyup="keyup_OrderTax()"
-                        ></b-form-input>
+                        <b-form-input :state="getValidationState(validationContext)"
+                          aria-describedby="OrderTax-feedback" label="Order Tax" v-model.number="sale.tax_rate"
+                          @keyup="keyup_OrderTax()"></b-form-input>
                       </b-input-group>
-                      <b-form-invalid-feedback
-                        id="OrderTax-feedback"
-                      >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                      <b-form-invalid-feedback id="OrderTax-feedback">{{ validationContext.errors[0]
+                        }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
                 <!-- Discount -->
-                <b-col lg="4" md="4" sm="12" class="mb-3" v-if="currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
-                  <validation-provider
-                    name="Discount"
-                    :rules="{ regex: /^\d*\.?\d*$/}"
-                    v-slot="validationContext"
-                  >
+                <b-col lg="4" md="4" sm="12" class="mb-3"
+                  v-if="currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
+                  <validation-provider name="Discount" :rules="{ regex: /^\d*\.?\d*$/ }" v-slot="validationContext">
                     <b-form-group :label="$t('Discount')">
                       <div class="d-flex" style="gap:8px; align-items:center;">
-                        <b-input-group :append="sale.discount_Method === '1' ? '%' : currentUser.currency" class="flex-grow-1">
-                          <b-form-input
-                            :state="getValidationState(validationContext)"
-                            aria-describedby="Discount-feedback"
-                            label="Discount"
-                            v-model.number="sale.discount"
-                            @keyup="keyup_Discount()"
-                          ></b-form-input>
+                        <b-input-group :append="sale.discount_Method === '1' ? '%' : currentUser.currency"
+                          class="flex-grow-1">
+                          <b-form-input :state="getValidationState(validationContext)"
+                            aria-describedby="Discount-feedback" label="Discount" v-model.number="sale.discount"
+                            @keyup="keyup_Discount()"></b-form-input>
                         </b-input-group>
-                        <b-form-select
-                          v-model="sale.discount_Method"
-                          :options="[
-                            { text: 'Fixed', value: '2' },
-                            { text: 'Percent %', value: '1' }
-                          ]"
-                          style="max-width: 110px;"
-                        ></b-form-select>
+                        <b-form-select v-model="sale.discount_Method" :options="[
+                          { text: 'Fixed', value: '2' },
+                          { text: 'Percent %', value: '1' }
+                        ]" style="max-width: 110px;"></b-form-select>
                       </div>
-                      <b-form-invalid-feedback
-                        id="Discount-feedback"
-                      >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                      <b-form-invalid-feedback id="Discount-feedback">{{ validationContext.errors[0]
+                        }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
-                <b-col lg="4" md="4" sm="12" class="mb-3" v-if="clientIsEligible && currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
+                <b-col lg="4" md="4" sm="12" class="mb-3"
+                  v-if="clientIsEligible && currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
                   <label>Points to convert</label>
                   <div class="field mb-2">
-                    <b-form-input
-                      ref="pointsInput"
-                      v-model.number="points_to_convert"
-                      @input="onPointsToConvertInput"
-                      type="text"
-                      min="1"
-                      :max="selectedClientPoints"
-                      step="1"
-                      :disabled="selectedClientPoints === 0 || pointsConverted"
-                      placeholder="e.g., 200"
-                    ></b-form-input>
+                    <b-form-input ref="pointsInput" v-model.number="points_to_convert" @input="onPointsToConvertInput"
+                      type="text" min="1" :max="selectedClientPoints" step="1"
+                      :disabled="selectedClientPoints === 0 || pointsConverted" placeholder="e.g., 200"></b-form-input>
                     <div class="hint mt-1">Total available: <strong>{{ selectedClientPoints }}</strong> pts</div>
                   </div>
 
                   <div class="actions d-flex align-items-center" style="gap:10px;">
-                    <b-button
-                      :variant="pointsConverted ? 'secondary' : 'dark'"
-                      @click="convertPointsToDiscount"
-                      :disabled="(!pointsConverted && (selectedClientPoints === 0 || !pointsInputValid))"
-                    >
+                    <b-button :variant="pointsConverted ? 'secondary' : 'dark'" @click="convertPointsToDiscount"
+                      :disabled="(!pointsConverted && (selectedClientPoints === 0 || !pointsInputValid))">
                       <template v-if="!pointsConverted">Convert</template>
                       <template v-else>Unconverted</template>
                     </b-button>
-                    <small v-if="!pointsConverted && points_to_convert && !pointsInputValid" class="warn">Enter a value from 1 to your available points.</small>
+                    <small v-if="!pointsConverted && points_to_convert && !pointsInputValid" class="warn">Enter a value
+                      from 1 to your
+                      available points.</small>
                     <small v-if="!pointsConverted && pointsInputValid" class="ok">Looks good.</small>
                   </div>
 
@@ -370,48 +323,33 @@
                 </b-col>
 
                 <!-- Shipping  -->
-                <b-col lg="4" md="4" sm="12" class="mb-3" v-if="currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
-                  <validation-provider
-                    name="Shipping"
-                    :rules="{ regex: /^\d*\.?\d*$/}"
-                    v-slot="validationContext"
-                  >
+                <b-col lg="4" md="4" sm="12" class="mb-3"
+                  v-if="currentUserPermissions && currentUserPermissions.includes('edit_tax_discount_shipping_sale')">
+                  <validation-provider name="Shipping" :rules="{ regex: /^\d*\.?\d*$/ }" v-slot="validationContext">
                     <b-form-group :label="$t('Shipping')">
                       <b-input-group :append="currentUser.currency">
-                        <b-form-input
-                          :state="getValidationState(validationContext)"
-                          aria-describedby="Shipping-feedback"
-                          label="Shipping"
-                          v-model.number="sale.shipping"
-                          @keyup="keyup_Shipping()"
-                        ></b-form-input>
+                        <b-form-input :state="getValidationState(validationContext)"
+                          aria-describedby="Shipping-feedback" label="Shipping" v-model.number="sale.shipping"
+                          @keyup="keyup_Shipping()"></b-form-input>
                       </b-input-group>
 
-                      <b-form-invalid-feedback
-                        id="Shipping-feedback"
-                      >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                      <b-form-invalid-feedback id="Shipping-feedback">{{ validationContext.errors[0]
+                        }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
                 <!-- Status  -->
                 <b-col lg="4" md="4" sm="12" class="mb-3">
-                  <validation-provider name="Status" :rules="{ required: true}">
+                  <validation-provider name="Status" :rules="{ required: true }">
                     <b-form-group slot-scope="{ valid, errors }" :label="$t('Status') + ' ' + '*'">
-                      <v-select
-                        @input="Selected_Status"
-                        :class="{'is-invalid': !!errors.length}"
-                        :state="errors[0] ? false : (valid ? true : null)"
-                        v-model="sale.statut"
-                        :reduce="label => label.value"
-                        :placeholder="$t('Choose_Status')"
-                        :options="
-                                [
-                                  {label: 'completed', value: 'completed'},
-                                  {label: 'Pending', value: 'pending'},
-                                  {label: 'ordered', value: 'ordered'}
-                                ]"
-                      ></v-select>
+                      <v-select @input="Selected_Status" :class="{ 'is-invalid': !!errors.length }"
+                        :state="errors[0] ? false : (valid ? true : null)" v-model="sale.statut"
+                        :reduce="label => label.value" :placeholder="$t('Choose_Status')" :options="[
+                            { label: 'completed', value: 'completed' },
+                            { label: 'Pending', value: 'pending' },
+                            { label: 'ordered', value: 'ordered' }
+                          ]"></v-select>
                       <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
@@ -421,133 +359,96 @@
                 <b-col md="4" v-if="sale.statut == 'completed'">
                   <validation-provider name="PaymentStatus">
                     <b-form-group :label="$t('PaymentStatus')">
-                      <v-select
-                        @input="Selected_PaymentStatus"
-                        :disabled="Number(GrandTotal) < 0"
-                        :reduce="label => label.value"
-                        v-model="payment.status"
-                        :placeholder="$t('Choose_Status')"
-                        :options="
-                                [
-                                  {label: 'Paid', value: 'paid'},
-                                  {label: 'partial', value: 'partial'},
-                                  {label: 'Pending', value: 'pending'},
-                                ]"
-                      ></v-select>
+                      <v-select @input="Selected_PaymentStatus" :disabled="Number(GrandTotal) < 0"
+                        :reduce="label => label.value" v-model="payment.status" :placeholder="$t('Choose_Status')"
+                        :options="[
+                            { label: 'Paid', value: 'paid' },
+                            { label: 'partial', value: 'partial' },
+                            { label: 'Pending', value: 'pending' },
+                          ]"></v-select>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
                 <!-- Payment choice -->
                 <b-col md="4" v-if="payment.status != 'pending' && sale.statut == 'completed'">
-                  <validation-provider name="Payment choice" :rules="{ required: true}">
+                  <validation-provider name="Payment choice" :rules="{ required: true }">
                     <b-form-group slot-scope="{ valid, errors }" :label="$t('Paymentchoice') + ' ' + '*'">
-                      <v-select
-                        :class="{'is-invalid': !!errors.length}"
-                        :state="errors[0] ? false : (valid ? true : null)"
-                        :reduce="label => label.value"
-                        v-model="payment.payment_method_id"
-                        :placeholder="$t('PleaseSelect')"
-                        :options="payment_methods.map(payment_methods => ({label: payment_methods.name, value: payment_methods.id}))"
-
-                      ></v-select>
+                      <v-select :class="{ 'is-invalid': !!errors.length }"
+                        :state="errors[0] ? false : (valid ? true : null)" :reduce="label => label.value"
+                        v-model="payment.payment_method_id" :placeholder="$t('PleaseSelect')"
+                        :options="payment_methods.map(payment_methods => ({ label: payment_methods.name, value: payment_methods.id }))"></v-select>
                       <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
 
-                  <!-- Received  Amount  -->
-                  <b-col md="4" v-if="payment.status != 'pending' && sale.statut == 'completed'">
-                      <validation-provider
-                        name="Received Amount"
-                        :rules="{ required: true , regex: /^\d*\.?\d*$/}"
-                        v-slot="validationContext"
-                      >
-                        <b-form-group :label="$t('Received_Amount') + ' ' + '*'">
-                          <b-form-input
-                            @keyup="Verified_Received_Amount(payment.received_amount)"
-                            label="Received_Amount"
-                            :placeholder="$t('Received_Amount')"
-                            v-model.number="payment.received_amount"
-                            :state="getValidationState(validationContext)"
-                            aria-describedby="Received_Amount-feedback"
-                          ></b-form-input>
-                          <b-form-invalid-feedback
-                            id="Received_Amount-feedback"
-                          >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
-                        </b-form-group>
-                      </validation-provider>
-                    </b-col>
+                <!-- Received  Amount  -->
+                <b-col md="4" v-if="payment.status != 'pending' && sale.statut == 'completed'">
+                  <validation-provider name="Received Amount" :rules="{ required: true, regex: /^\d*\.?\d*$/ }"
+                    v-slot="validationContext">
+                    <b-form-group :label="$t('Received_Amount') + ' ' + '*'">
+                      <b-form-input @keyup="Verified_Received_Amount(payment.received_amount)" label="Received_Amount"
+                        :placeholder="$t('Received_Amount')" v-model.number="payment.received_amount"
+                        :state="getValidationState(validationContext)"
+                        aria-describedby="Received_Amount-feedback"></b-form-input>
+                      <b-form-invalid-feedback id="Received_Amount-feedback">{{ validationContext.errors[0]
+                        }}</b-form-invalid-feedback>
+                    </b-form-group>
+                  </validation-provider>
+                </b-col>
 
 
                 <!-- Amount  -->
                 <b-col md="4" v-if="payment.status != 'pending' && sale.statut == 'completed'">
-                  <validation-provider
-                    name="Amount"
-                    :rules="{ required: true , regex: /^\d*\.?\d*$/}"
-                    v-slot="validationContext"
-                  >
+                  <validation-provider name="Amount" :rules="{ required: true, regex: /^\d*\.?\d*$/ }"
+                    v-slot="validationContext">
                     <b-form-group :label="$t('Paying_Amount') + ' ' + '*'">
-                      <b-form-input
-                        :disabled="payment.status == 'paid'"
-                        label="Amount"
-                        :placeholder="$t('Paying_Amount')"
-                        v-model.number="payment.amount"
-                        @keyup="Verified_paidAmount(payment.amount)"
-                        :state="getValidationState(validationContext)"
-                        aria-describedby="Amount-feedback"
-                      ></b-form-input>
-                      <b-form-invalid-feedback
-                        id="Amount-feedback"
-                      >{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                      <b-form-input :disabled="payment.status == 'paid'" label="Amount"
+                        :placeholder="$t('Paying_Amount')" v-model.number="payment.amount"
+                        @keyup="Verified_paidAmount(payment.amount)" :state="getValidationState(validationContext)"
+                        aria-describedby="Amount-feedback"></b-form-input>
+                      <b-form-invalid-feedback id="Amount-feedback">{{ validationContext.errors[0]
+                        }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
                 </b-col>
 
                 <!-- change  Amount  -->
                 <b-col md="4" v-if="payment.status != 'pending' && sale.statut == 'completed'">
-                  <label>{{$t('Change')}} :</label>
-                  <p
-                    class="change_amount"
-                  >{{parseFloat(payment.received_amount - payment.amount).toFixed(2)}}</p>
+                  <label>{{ $t('Change') }} :</label>
+                  <p class="change_amount">{{ parseFloat(payment.received_amount - payment.amount).toFixed(2) }}</p>
                 </b-col>
 
-               
-                   <!-- Account -->
-                  <b-col lg="4" md="4" sm="12" v-if="payment.status != 'pending' && sale.statut == 'completed'">
-                    <validation-provider name="Account">
-                      <b-form-group slot-scope="{ valid, errors }" :label="$t('Account')">
-                        <v-select
-                          :class="{'is-invalid': !!errors.length}"
-                          :state="errors[0] ? false : (valid ? true : null)"
-                          v-model="payment.account_id"
-                          :reduce="label => label.value"
-                          :placeholder="$t('Choose_Account')"
-                          :options="accounts.map(accounts => ({label: accounts.account_name, value: accounts.id}))"
-                        />
-                        <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
-                      </b-form-group>
-                    </validation-provider>
-                  </b-col>
+
+                <!-- Account -->
+                <b-col lg="4" md="4" sm="12" v-if="payment.status != 'pending' && sale.statut == 'completed'">
+                  <validation-provider name="Account">
+                    <b-form-group slot-scope="{ valid, errors }" :label="$t('Account')">
+                      <v-select :class="{ 'is-invalid': !!errors.length }"
+                        :state="errors[0] ? false : (valid ? true : null)" v-model="payment.account_id"
+                        :reduce="label => label.value" :placeholder="$t('Choose_Account')"
+                        :options="accounts.map(accounts => ({ label: accounts.account_name, value: accounts.id }))" />
+                      <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
+                    </b-form-group>
+                  </validation-provider>
+                </b-col>
 
                 <b-col md="12" class="mt-3">
                   <b-form-group :label="$t('Note')">
-                    <textarea
-                      v-model="sale.notes"
-                      rows="4"
-                      class="form-control"
-                      :placeholder="$t('Afewwords')"
-                    ></textarea>
+                    <textarea v-model="sale.notes" rows="4" class="form-control"
+                      :placeholder="$t('Afewwords')"></textarea>
                   </b-form-group>
                 </b-col>
 
                 <b-col md="12">
                   <b-form-group>
-                    <b-button variant="primary" :disabled="paymentProcessing || hasMinPriceViolation" @click="Submit_Sale"><i class="i-Yes me-2 font-weight-bold"></i> {{$t('submit')}}</b-button>
+                    <b-button variant="primary" :disabled="paymentProcessing || hasMinPriceViolation"
+                      @click="Submit_Sale"><i class="i-Yes me-2 font-weight-bold"></i> {{ $t('submit') }}</b-button>
                     <div v-once class="typo__p" v-if="paymentProcessing">
-                    <div class="spinner sm spinner-primary mt-3"></div>
-                  </div>
+                      <div class="spinner sm spinner-primary mt-3"></div>
+                    </div>
                   </b-form-group>
                 </b-col>
               </b-row>
@@ -564,20 +465,12 @@
           <b-row>
             <!-- Customer Name -->
             <b-col md="6" sm="12">
-              <validation-provider
-                name="Name Customer"
-                :rules="{ required: true}"
-                v-slot="validationContext"
-              >
+              <validation-provider name="Name Customer" :rules="{ required: true }" v-slot="validationContext">
                 <b-form-group :label="$t('CustomerName') + ' ' + '*'">
-                  <b-form-input
-                    :state="getValidationState(validationContext)"
-                    aria-describedby="name-feedback"
-                    label="name"
-                    :placeholder="$t('CustomerName')"
-                    v-model="client.name"
-                  ></b-form-input>
-                  <b-form-invalid-feedback id="name-feedback">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                  <b-form-input :state="getValidationState(validationContext)" aria-describedby="name-feedback"
+                    label="name" :placeholder="$t('CustomerName')" v-model="client.name"></b-form-input>
+                  <b-form-invalid-feedback id="name-feedback">{{ validationContext.errors[0]
+                    }}</b-form-invalid-feedback>
                 </b-form-group>
               </validation-provider>
             </b-col>
@@ -585,80 +478,52 @@
             <!-- Customer Email -->
             <b-col md="6" sm="12">
               <b-form-group :label="$t('Email')">
-                <b-form-input
-                  label="email"
-                  v-model="client.email"
-                  :placeholder="$t('Email')"
-                ></b-form-input>
+                <b-form-input label="email" v-model="client.email" :placeholder="$t('Email')"></b-form-input>
               </b-form-group>
             </b-col>
 
             <!-- Customer Phone -->
             <b-col md="6" sm="12">
               <b-form-group :label="$t('Phone')">
-                <b-form-input
-                  label="Phone"
-                  v-model="client.phone"
-                  :placeholder="$t('Phone')"
-                ></b-form-input>
+                <b-form-input label="Phone" v-model="client.phone" :placeholder="$t('Phone')"></b-form-input>
               </b-form-group>
             </b-col>
 
             <!-- Customer Country -->
             <b-col md="6" sm="12">
               <b-form-group :label="$t('Country')">
-                <b-form-input
-                  label="Country"
-                  v-model="client.country"
-                  :placeholder="$t('Country')"
-                ></b-form-input>
+                <b-form-input label="Country" v-model="client.country" :placeholder="$t('Country')"></b-form-input>
               </b-form-group>
             </b-col>
 
             <!-- Customer City -->
             <b-col md="6" sm="12">
               <b-form-group :label="$t('City')">
-                <b-form-input
-                  label="City"
-                  v-model="client.city"
-                  :placeholder="$t('City')"
-                ></b-form-input>
+                <b-form-input label="City" v-model="client.city" :placeholder="$t('City')"></b-form-input>
               </b-form-group>
             </b-col>
 
             <!-- Customer Tax Number -->
             <b-col md="6" sm="12">
               <b-form-group :label="$t('Tax_Number')">
-                <b-form-input
-                  label="Tax Number"
-                  v-model="client.tax_number"
-                  :placeholder="$t('Tax_Number')"
-                ></b-form-input>
+                <b-form-input label="Tax Number" v-model="client.tax_number"
+                  :placeholder="$t('Tax_Number')"></b-form-input>
               </b-form-group>
             </b-col>
 
             <!-- Customer Address -->
             <b-col md="12" sm="12">
               <b-form-group :label="$t('Adress')">
-                <textarea
-                  label="Adress"
-                  class="form-control"
-                  rows="4"
-                  v-model="client.adresse"
-                  :placeholder="$t('Adress')"
-                ></textarea>
+                <textarea label="Adress" class="form-control" rows="4" v-model="client.adresse"
+                  :placeholder="$t('Adress')"></textarea>
               </b-form-group>
             </b-col>
 
             <!-- Loyalty eligibility -->
             <b-col md="6" sm="12" class="mt-4 mb-4">
               <div class="psx-form-check">
-                <input
-                  type="checkbox"
-                  v-model="client.is_royalty_eligible"
-                  class="psx-checkbox psx-form-check-input"
-                  id="is_royalty_eligible_quick"
-                >
+                <input type="checkbox" v-model="client.is_royalty_eligible" class="psx-checkbox psx-form-check-input"
+                  id="is_royalty_eligible_quick">
                 <label class="psx-form-check-label" for="is_royalty_eligible_quick">
                   <h5>{{ $t('Is_Royalty_Eligible') }}</h5>
                 </label>
@@ -666,8 +531,9 @@
             </b-col>
 
             <b-col md="12" class="mt-3">
-              <b-button variant="secondary" class="mr-2" @click="$bvModal.hide('Quick_Add_Customer')">{{ $t('Cancel') }}</b-button>
-              <b-button variant="primary" type="submit" :disabled="SubmitProcessing">{{$t('submit')}}</b-button>
+              <b-button variant="secondary" class="mr-2" @click="$bvModal.hide('Quick_Add_Customer')">{{ $t('Cancel')
+                }}</b-button>
+              <b-button variant="primary" type="submit" :disabled="SubmitProcessing">{{ $t('submit') }}</b-button>
               <div v-once class="typo__p" v-if="SubmitProcessing">
                 <div class="spinner sm spinner-primary mt-3"></div>
               </div>
@@ -684,20 +550,15 @@
           <b-row>
             <!-- Unit Price -->
             <b-col lg="6" md="6" sm="12">
-              <validation-provider
-                name="Product Price"
-                :rules="{ required: true , regex: /^\d*\.?\d*$/}"
-                v-slot="validationContext"
-              >
+              <validation-provider name="Product Price" :rules="{ required: true, regex: /^\d*\.?\d*$/ }"
+                v-slot="validationContext">
                 <b-form-group :label="$t('ProductPrice') + ' ' + '*'" id="Price-input">
-                  <b-form-input
-                    label="Product Price"
-                    v-model="detail.Unit_price"
-                    :state="getValidationState(validationContext)"
-                    aria-describedby="Price-feedback"
-                  ></b-form-input>
-                  <b-form-invalid-feedback id="Price-feedback">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
-                  <small v-if="detailHasMinPriceViolation" class="text-danger">{{ $t('Price_below_min_not_allowed') }}</small>
+                  <b-form-input label="Product Price" v-model="detail.Unit_price"
+                    :state="getValidationState(validationContext)" aria-describedby="Price-feedback"></b-form-input>
+                  <b-form-invalid-feedback id="Price-feedback">{{ validationContext.errors[0]
+                    }}</b-form-invalid-feedback>
+                  <small v-if="detailHasMinPriceViolation" class="text-danger">{{ $t('Price_below_min_not_allowed')
+                    }}</small>
                 </b-form-group>
               </validation-provider>
             </b-col>
@@ -706,35 +567,25 @@
             <b-col lg="6" md="6" sm="12">
               <validation-provider name="Price Type">
                 <b-form-group :label="$t('Price Type')">
-                  <v-select
-                    :reduce="opt => opt.value"
-                    v-model="detail.price_type"
-                    @input="val => onChangeDetailPriceType(val)"
-                    :options="[
-                      {label: $t('Retail Price'), value: 'retail'},
-                      {label: $t('Wholesale Price'), value: 'wholesale'}
-                    ]"
-                  />
+                  <v-select :reduce="opt => opt.value" v-model="detail.price_type"
+                    @input="val => onChangeDetailPriceType(val)" :options="[
+                      { label: $t('Retail Price'), value: 'retail' },
+                      { label: $t('Wholesale Price'), value: 'wholesale' }
+                    ]" />
                 </b-form-group>
               </validation-provider>
             </b-col>
 
             <!-- Tax Method -->
             <b-col lg="6" md="6" sm="12">
-              <validation-provider name="Tax Method" :rules="{ required: true}">
+              <validation-provider name="Tax Method" :rules="{ required: true }">
                 <b-form-group slot-scope="{ valid, errors }" :label="$t('TaxMethod') + ' ' + '*'">
-                  <v-select
-                    :class="{'is-invalid': !!errors.length}"
-                    :state="errors[0] ? false : (valid ? true : null)"
-                    v-model="detail.tax_method"
-                    :reduce="label => label.value"
-                    :placeholder="$t('Choose_Method')"
-                    :options="
-                           [
-                            {label: 'Exclusive', value: '1'},
-                            {label: 'Inclusive', value: '2'}
-                           ]"
-                  ></v-select>
+                  <v-select :class="{ 'is-invalid': !!errors.length }" :state="errors[0] ? false : (valid ? true : null)"
+                    v-model="detail.tax_method" :reduce="label => label.value" :placeholder="$t('Choose_Method')"
+                    :options="[
+                        { label: 'Exclusive', value: '1' },
+                        { label: 'Inclusive', value: '2' }
+                      ]"></v-select>
                   <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                 </b-form-group>
               </validation-provider>
@@ -742,100 +593,73 @@
 
             <!-- Tax Rate -->
             <b-col lg="6" md="6" sm="12">
-              <validation-provider
-                name="Order Tax"
-                :rules="{ required: true , regex: /^\d*\.?\d*$/}"
-                v-slot="validationContext"
-              >
+              <validation-provider name="Order Tax" :rules="{ required: true, regex: /^\d*\.?\d*$/ }"
+                v-slot="validationContext">
                 <b-form-group :label="$t('OrderTax') + ' ' + '*'">
                   <b-input-group append="%">
-                    <b-form-input
-                      label="Order Tax"
-                      v-model="detail.tax_percent"
+                    <b-form-input label="Order Tax" v-model="detail.tax_percent"
                       :state="getValidationState(validationContext)"
-                      aria-describedby="OrderTax-feedback"
-                    ></b-form-input>
+                      aria-describedby="OrderTax-feedback"></b-form-input>
                   </b-input-group>
-                  <b-form-invalid-feedback id="OrderTax-feedback">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                  <b-form-invalid-feedback id="OrderTax-feedback">{{ validationContext.errors[0]
+                    }}</b-form-invalid-feedback>
                 </b-form-group>
               </validation-provider>
             </b-col>
 
             <!-- Discount Method -->
-             <b-col lg="6" md="6" sm="12">
-              <validation-provider name="Discount Method" :rules="{ required: true}">
+            <b-col lg="6" md="6" sm="12">
+              <validation-provider name="Discount Method" :rules="{ required: true }">
                 <b-form-group slot-scope="{ valid, errors }" :label="$t('Discount_Method') + ' ' + '*'">
-                  <v-select
-                    v-model="detail.discount_Method"
-                    :reduce="label => label.value"
-                    :placeholder="$t('Choose_Method')"
-                    :class="{'is-invalid': !!errors.length}"
-                    :state="errors[0] ? false : (valid ? true : null)"
-                    :options="
-                           [
-                            {label: 'Percent %', value: '1'},
-                            {label: 'Fixed', value: '2'}
-                           ]"
-                  ></v-select>
+                  <v-select v-model="detail.discount_Method" :reduce="label => label.value"
+                    :placeholder="$t('Choose_Method')" :class="{ 'is-invalid': !!errors.length }"
+                    :state="errors[0] ? false : (valid ? true : null)" :options="[
+                        { label: 'Percent %', value: '1' },
+                        { label: 'Fixed', value: '2' }
+                      ]"></v-select>
                   <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                 </b-form-group>
               </validation-provider>
             </b-col>
 
             <!-- Discount Rate -->
-           <b-col lg="6" md="6" sm="12">
-              <validation-provider
-                name="Discount Rate"
-                :rules="{ required: true , regex: /^\d*\.?\d*$/}"
-                v-slot="validationContext"
-              >
+            <b-col lg="6" md="6" sm="12">
+              <validation-provider name="Discount Rate" :rules="{ required: true, regex: /^\d*\.?\d*$/ }"
+                v-slot="validationContext">
                 <b-form-group :label="$t('Discount') + ' ' + '*'">
-                  <b-form-input
-                    label="Discount"
-                    v-model.number="detail.discount"
-                    :state="getValidationState(validationContext)"
-                    aria-describedby="Discount-feedback"
-                  ></b-form-input>
-                  <b-form-invalid-feedback id="Discount-feedback">{{ validationContext.errors[0] }}</b-form-invalid-feedback>
+                  <b-form-input label="Discount" v-model.number="detail.discount"
+                    :state="getValidationState(validationContext)" aria-describedby="Discount-feedback"></b-form-input>
+                  <b-form-invalid-feedback id="Discount-feedback">{{ validationContext.errors[0]
+                    }}</b-form-invalid-feedback>
                 </b-form-group>
               </validation-provider>
             </b-col>
 
             <!-- Unit Sale -->
             <b-col lg="6" md="6" sm="12" v-if="detail.product_type != 'is_service'">
-              <validation-provider name="Unit Sale" :rules="{ required: true}">
+              <validation-provider name="Unit Sale" :rules="{ required: true }">
                 <b-form-group slot-scope="{ valid, errors }" :label="$t('UnitSale') + ' ' + '*'">
-                  <v-select
-                    :class="{'is-invalid': !!errors.length}"
-                    :state="errors[0] ? false : (valid ? true : null)"
-                    v-model="detail.sale_unit_id"
-                    :placeholder="$t('Choose_Unit_Sale')"
-                    :reduce="label => label.value"
-                    :options="units.map(units => ({label: units.name, value: units.id}))"
-                  />
+                  <v-select :class="{ 'is-invalid': !!errors.length }" :state="errors[0] ? false : (valid ? true : null)"
+                    v-model="detail.sale_unit_id" :placeholder="$t('Choose_Unit_Sale')" :reduce="label => label.value"
+                    :options="units.map(units => ({ label: units.name, value: units.id }))" />
                   <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                 </b-form-group>
               </validation-provider>
             </b-col>
 
-             <!-- Imei or serial numbers -->
-              <b-col lg="12" md="12" sm="12" v-show="detail.is_imei">
-                <b-form-group :label="$t('Add_product_IMEI_Serial_number')">
-                  <b-form-input
-                    label="Add_product_IMEI_Serial_number"
-                    v-model="detail.imei_number"
-                    :placeholder="$t('Add_product_IMEI_Serial_number')"
-                  ></b-form-input>
-                </b-form-group>
+            <!-- Imei or serial numbers -->
+            <b-col lg="12" md="12" sm="12" v-show="detail.is_imei">
+              <b-form-group :label="$t('Add_product_IMEI_Serial_number')">
+                <b-form-input label="Add_product_IMEI_Serial_number" v-model="detail.imei_number"
+                  :placeholder="$t('Add_product_IMEI_Serial_number')"></b-form-input>
+              </b-form-group>
             </b-col>
 
             <b-col md="12">
               <b-form-group>
-                <b-button
-                  variant="primary"
-                  type="submit"
-                  :disabled="Submit_Processing_detail || detailHasMinPriceViolation"
-                ><i class="i-Yes me-2 font-weight-bold"></i> {{$t('submit')}}</b-button>
+                <b-button variant="primary" type="submit"
+                  :disabled="Submit_Processing_detail || detailHasMinPriceViolation"><i
+                    class="i-Yes me-2 font-weight-bold"></i> {{ $t('submit') }}</b-button>
                 <div v-once class="typo__p" v-if="Submit_Processing_detail">
                   <div class="spinner sm spinner-primary mt-3"></div>
                 </div>
@@ -860,12 +684,12 @@ export default {
   data() {
     return {
       focused: false,
-      timer:null,
-      search_input:'',
-      product_filter:[],
+      timer: null,
+      search_input: '',
+      product_filter: [],
 
       paymentProcessing: false,
-      Submit_Processing_detail:false,
+      Submit_Processing_detail: false,
       SubmitProcessing: false,
       isLoading: true,
       warehouses: [],
@@ -897,7 +721,7 @@ export default {
         min_price: 0
       },
       sales: [],
-      payment_methods:[],
+      payment_methods: [],
       payment: {
         status: "pending",
         payment_method_id: "2",
@@ -930,10 +754,10 @@ export default {
       // Credit control
       selectedClientCreditLimit: 0,
       selectedClientNetBalance: 0,
-      timer:null,
+      timer: null,
       total: 0,
       GrandTotal: 0,
-      units:[],
+      units: [],
       product: {
         id: "",
         product_type: "",
@@ -944,9 +768,9 @@ export default {
         DiscountNet: "",
         discount_Method: "",
         name: "",
-        sale_unit_id:"",
-        fix_stock:"",
-        fix_price:"",
+        sale_unit_id: "",
+        fix_stock: "",
+        fix_price: "",
         unitSale: "",
         Net_price: "",
         Unit_price: "",
@@ -966,20 +790,20 @@ export default {
         tax_method: "",
         product_variant_id: "",
         is_imei: "",
-        imei_number:"",
+        imei_number: "",
       }
     };
   },
 
   computed: {
-    ...mapGetters(["currentUserPermissions","currentUser"]),
+    ...mapGetters(["currentUserPermissions", "currentUser"]),
     pointsInputValid() {
       const max = Number(this.selectedClientPoints) || 0;
       const val = Number(this.points_to_convert);
       return Number.isInteger(val) && val >= 1 && val <= max;
     },
 
-    
+
 
     hasMinPriceViolation() {
       return this.details.some(d => (d.min_price || 0) > 0 && d.Net_price < d.min_price);
@@ -1022,25 +846,25 @@ export default {
       this.CalculTotal();
     }
   },
- 
+
 
   methods: {
 
     showModal() {
       this.$bvModal.show('open_scan');
-      
+
     },
 
-    onScan (decodedText, decodedResult) {
+    onScan(decodedText, decodedResult) {
       const code = decodedText;
       this.search_input = code;
       this.search();
       this.$bvModal.hide('open_scan');
     },
-    
 
 
-     handleFocus() {
+
+    handleFocus() {
       this.focused = true
     },
 
@@ -1050,7 +874,7 @@ export default {
 
     async Selected_customer(selectedClientId) {
       this.payment.payment_method_id = 2;
-      this.savedPaymentMethods= [];
+      this.savedPaymentMethods = [];
       this.selectedClientPoints = 0;
       this.initialClientPoints = 0;
       this.points_to_convert = 0;
@@ -1131,7 +955,7 @@ export default {
           pts = maxPoints;
           this.$nextTick && this.$nextTick(() => {
             const r = this.$refs && this.$refs.pointsInput;
-            if (r && r.$el) { try { r.$el.value = String(this.points_to_convert); } catch(e) {} }
+            if (r && r.$el) { try { r.$el.value = String(this.points_to_convert); } catch (e) { } }
           });
         }
         const discount = parseFloat((pts * this.point_to_amount_rate).toFixed(2));
@@ -1143,7 +967,7 @@ export default {
         this.points_to_convert = pts;
         this.$nextTick && this.$nextTick(() => {
           const r = this.$refs && this.$refs.pointsInput;
-          if (r && r.$el) { try { r.$el.value = String(this.points_to_convert); } catch(e) {} }
+          if (r && r.$el) { try { r.$el.value = String(this.points_to_convert); } catch (e) { } }
         });
         this.pointsConverted = true;
         // reduce available points display until saved
@@ -1167,26 +991,26 @@ export default {
       }
       this.points_to_convert = val;
     },
-    
 
 
-     //---------------------- Event Select Status ------------------------------\\
 
-     Selected_Status(value){
+    //---------------------- Event Select Status ------------------------------\\
+
+    Selected_Status(value) {
       if (value != "completed") {
         this.payment.status = 'pending';
       }
-    
+
     },
 
     //---------------------- Event Select Payment Status ------------------------------\\
 
-    Selected_PaymentStatus(value){
+    Selected_PaymentStatus(value) {
       if (value == "paid") {
         var payment_amount = this.GrandTotal.toFixed(2);
         this.payment.amount = this.formatNumber(payment_amount, 2);
         this.payment.received_amount = this.formatNumber(payment_amount, 2);
-      }else{
+      } else {
         this.payment.amount = 0;
         this.payment.received_amount = 0;
       }
@@ -1198,13 +1022,13 @@ export default {
       if (isNaN(this.payment.amount)) {
         this.payment.amount = 0;
       } else if (this.payment.amount > this.payment.received_amount) {
-          this.makeToast(
-            "warning",
-            this.$t("Paying_amount_is_greater_than_Received_amount"),
-            this.$t("Warning")
-          );
-          this.payment.amount = 0;
-      } 
+        this.makeToast(
+          "warning",
+          this.$t("Paying_amount_is_greater_than_Received_amount"),
+          this.$t("Warning")
+        );
+        this.payment.amount = 0;
+      }
       else if (this.payment.amount > this.GrandTotal) {
         this.makeToast(
           "warning",
@@ -1220,11 +1044,11 @@ export default {
     Verified_Received_Amount() {
       if (isNaN(this.payment.received_amount)) {
         this.payment.received_amount = 0;
-      } 
+      }
     },
 
 
-  
+
     //--- Submit Validate Create Sale
     Submit_Sale() {
       // hard block if any line violates min price
@@ -1251,42 +1075,42 @@ export default {
           );
           this.payment.received_amount = 0;
         }
-          else if (this.payment.amount > this.GrandTotal) {
-            this.makeToast(
-              "warning",
-              this.$t("Paying_amount_is_greater_than_Grand_Total"),
-              this.$t("Warning")
-            );
-            this.payment.amount = 0;
-          } else {
-            // Credit Limit Validation (0 means no limit)
-            // Only applies when this sale is adding new credit (paid amount < sale total)
-            if (this.selectedClientId && this.selectedClientCreditLimit > 0) {
-              const totalPaid = parseFloat(this.payment.amount || 0);
-              const saleTotal = parseFloat(this.GrandTotal || 0);
+        else if (this.payment.amount > this.GrandTotal) {
+          this.makeToast(
+            "warning",
+            this.$t("Paying_amount_is_greater_than_Grand_Total"),
+            this.$t("Warning")
+          );
+          this.payment.amount = 0;
+        } else {
+          // Credit Limit Validation (0 means no limit)
+          // Only applies when this sale is adding new credit (paid amount < sale total)
+          if (this.selectedClientId && this.selectedClientCreditLimit > 0) {
+            const totalPaid = parseFloat(this.payment.amount || 0);
+            const saleTotal = parseFloat(this.GrandTotal || 0);
 
-              if (totalPaid < saleTotal) {
-                const currentDue = parseFloat(this.selectedClientNetBalance || 0);
-                const newSaleDue = saleTotal - totalPaid; // Remaining due from this sale
-                const newTotalDue = currentDue + newSaleDue;
+            if (totalPaid < saleTotal) {
+              const currentDue = parseFloat(this.selectedClientNetBalance || 0);
+              const newSaleDue = saleTotal - totalPaid; // Remaining due from this sale
+              const newTotalDue = currentDue + newSaleDue;
 
-                if (newTotalDue > this.selectedClientCreditLimit) {
-                  const exceededAmount = newTotalDue - this.selectedClientCreditLimit;
-                  this.makeToast(
-                    "danger",
-                    this.$t("Credit_Limit_Exceeded") + ": " +
-                      this.formatNumber(exceededAmount, 2) + " " +
-                      this.$t("exceeds_credit_limit_of") + " " +
-                      this.formatNumber(this.selectedClientCreditLimit, 2),
-                    this.$t("Warning")
-                  );
-                  return;
-                }
+              if (newTotalDue > this.selectedClientCreditLimit) {
+                const exceededAmount = newTotalDue - this.selectedClientCreditLimit;
+                this.makeToast(
+                  "danger",
+                  this.$t("Credit_Limit_Exceeded") + ": " +
+                  this.formatNumber(exceededAmount, 2) + " " +
+                  this.$t("exceeds_credit_limit_of") + " " +
+                  this.formatNumber(this.selectedClientCreditLimit, 2),
+                  this.$t("Warning")
+                );
+                return;
               }
             }
-
-            this.Create_Sale();
           }
+
+          this.Create_Sale();
+        }
       });
     },
     //---Submit Validation Update Detail
@@ -1351,7 +1175,7 @@ export default {
       this.detail.retail_unit_price = detail.retail_unit_price !== undefined ? detail.retail_unit_price : detail.Unit_price;
       this.detail.wholesale_unit_price = detail.wholesale_unit_price !== undefined ? detail.wholesale_unit_price : detail.Unit_price_wholesale;
 
-       setTimeout(() => {
+      setTimeout(() => {
         NProgress.done();
         this.$bvModal.show("form_Update_Detail");
       }, 1000);
@@ -1368,25 +1192,25 @@ export default {
         if (this.details[i].detail_id === this.detail.detail_id) {
 
           // this.convert_unit();
-           for(var k=0; k<this.units.length; k++){
-              if (this.units[k].id == this.detail.sale_unit_id) {
-                if(this.units[k].operator == '/'){
-                  this.details[i].stock       = this.detail.fix_stock  * this.units[k].operator_value;
-                  this.details[i].unitSale    = this.units[k].ShortName;
+          for (var k = 0; k < this.units.length; k++) {
+            if (this.units[k].id == this.detail.sale_unit_id) {
+              if (this.units[k].operator == '/') {
+                this.details[i].stock = this.detail.fix_stock * this.units[k].operator_value;
+                this.details[i].unitSale = this.units[k].ShortName;
 
-                }else{
-                  this.details[i].stock       = this.detail.fix_stock  / this.units[k].operator_value;
-                  this.details[i].unitSale    = this.units[k].ShortName;
-                }
+              } else {
+                this.details[i].stock = this.detail.fix_stock / this.units[k].operator_value;
+                this.details[i].unitSale = this.units[k].ShortName;
               }
             }
+          }
 
-            if (this.details[i].stock < this.details[i].quantity) {
-              this.details[i].quantity = this.details[i].stock;
-            } else {
-              this.details[i].quantity =1;
-            }
-                      
+          if (this.details[i].stock < this.details[i].quantity) {
+            this.details[i].quantity = this.details[i].stock;
+          } else {
+            this.details[i].quantity = 1;
+          }
+
           // persist selected price type from modal BEFORE adjusting baselines
           this.details[i].price_type = this.detail.price_type || this.details[i].price_type;
           this.details[i].Unit_price = this.detail.Unit_price;
@@ -1423,19 +1247,19 @@ export default {
             this.details[i].taxe = parseFloat(
               (this.details[i].tax_percent *
                 (this.details[i].Unit_price - this.details[i].DiscountNet)) /
-                100
+              100
             );
           } else {
             //Inclusive
             this.details[i].taxe = parseFloat(
               (this.details[i].Unit_price - this.details[i].DiscountNet) *
-                (this.details[i].tax_percent / 100)
+              (this.details[i].tax_percent / 100)
             );
 
             this.details[i].Net_price = parseFloat(
               this.details[i].Unit_price -
-                this.details[i].taxe -
-                this.details[i].DiscountNet
+              this.details[i].taxe -
+              this.details[i].DiscountNet
             );
           }
 
@@ -1460,7 +1284,7 @@ export default {
 
     },
 
-    onChangeDetailPriceType(newType){
+    onChangeDetailPriceType(newType) {
       if (newType) {
         this.detail.price_type = newType;
       }
@@ -1470,15 +1294,15 @@ export default {
 
 
     // Search Products
-    search(){
+    search() {
       if (this.timer) {
-            clearTimeout(this.timer);
-            this.timer = null;
+        clearTimeout(this.timer);
+        this.timer = null;
       }
       if (this.search_input.length < 2) {
-        return this.product_filter= [];
+        return this.product_filter = [];
       }
-      if (this.sale.warehouse_id != "" &&  this.sale.warehouse_id != null) {
+      if (this.sale.warehouse_id != "" && this.sale.warehouse_id != null) {
         this.timer = setTimeout(() => {
 
           let barcode = this.search_input.trim();
@@ -1490,7 +1314,7 @@ export default {
             if (product) {
               this.SearchProduct(product, weight);
               return;
-            }else{
+            } else {
 
               let productCode = barcode.substring(0, 7); // First 7 digits → Product Code
               let weight = parseFloat(barcode.substring(7, 12)) / 1000; // Convert weight (grams to kg)
@@ -1503,7 +1327,7 @@ export default {
             }
 
             this.makeToast("danger", "Invalid product code scanned", this.$t("Error"));
-            this.search_input= '';
+            this.search_input = '';
             this.$refs.product_autocomplete.value = "";
             this.product_filter = [];
           }
@@ -1515,8 +1339,8 @@ export default {
           //   this.product_filter = [];
 
           // }
-          
-          
+
+
           // Regular product search (for non-weighing scale barcodes)
           const product_filter = this.products.filter(product =>
             product.name.toLowerCase().includes(this.search_input.toLowerCase()) ||
@@ -1556,37 +1380,37 @@ export default {
       ) {
         this.makeToast("warning", this.$t("AlreadyAdd"), this.$t("Warning"));
       } else {
-          if( result.product_type =='is_service'){
-            this.product.quantity = 1;
-            this.product.code = result.code;
-            this.product.stock = '---';
-            this.product.fix_stock = '---';
-          }else{
+        if (result.product_type == 'is_service') {
+          this.product.quantity = 1;
+          this.product.code = result.code;
+          this.product.stock = '---';
+          this.product.fix_stock = '---';
+        } else {
 
-            this.product.code = result.code;
-            this.product.stock = result.qte_sale;
-            this.product.fix_stock = result.qte;
+          this.product.code = result.code;
+          this.product.stock = result.qte_sale;
+          this.product.fix_stock = result.qte;
 
-             // Check if it's a weighing scale product
-             if (weight !== null) {
-              this.product.quantity = weight; // Assign extracted weight
-            } else {
-              this.product.quantity = result.qte_sale < 1 ? result.qte_sale : 1;
-            }
-
+          // Check if it's a weighing scale product
+          if (weight !== null) {
+            this.product.quantity = weight; // Assign extracted weight
+          } else {
+            this.product.quantity = result.qte_sale < 1 ? result.qte_sale : 1;
           }
+
+        }
         this.product.product_variant_id = result.product_variant_id;
         this.Get_Product_Details(result.id, result.product_variant_id);
       }
 
-      this.search_input= '';
+      this.search_input = '';
       this.$refs.product_autocomplete.value = "";
       this.product_filter = [];
     },
 
     //---------------------- Event Select Warehouse ------------------------------\\
     Selected_Warehouse(value) {
-      this.search_input= '';
+      this.search_input = '';
       this.product_filter = [];
       this.Get_Products_By_Warehouse(value);
     },
@@ -1675,21 +1499,21 @@ export default {
         });
     },
 
-     //------------------------------------ Get Products By Warehouse -------------------------\\
+    //------------------------------------ Get Products By Warehouse -------------------------\\
 
     Get_Products_By_Warehouse(id) {
       // Start the progress bar.
-        NProgress.start();
-        NProgress.set(0.1);
+      NProgress.start();
+      NProgress.set(0.1);
       axios
         .get("get_Products_by_warehouse/" + id + "?stock=" + 1 + "&is_sale=" + 1 + "&product_service=" + 1 + "&product_combo=" + 1)
-         .then(response => {
-            this.products = response.data;
-             NProgress.done();
+        .then(response => {
+          this.products = response.data;
+          NProgress.done();
 
-            })
-          .catch(error => {
-          });
+        })
+        .catch(error => {
+        });
     },
 
     //----------------------------------------- Add Product to order list -------------------------\\
@@ -1701,7 +1525,7 @@ export default {
       }
 
       this.details.push(this.product);
-      if(this.product.is_imei){
+      if (this.product.is_imei) {
         this.Modal_Updat_Detail(this.product);
       }
     },
@@ -1823,11 +1647,11 @@ export default {
         total_without_discount + this.sale.TaxNet + this.sale.shipping
       );
 
-      var grand_total =  this.GrandTotal.toFixed(2);
+      var grand_total = this.GrandTotal.toFixed(2);
       this.GrandTotal = parseFloat(grand_total);
 
-      if(this.payment.status == 'paid'){
-          this.payment.amount = this.formatNumber(this.GrandTotal, 2);
+      if (this.payment.status == 'paid') {
+        this.payment.amount = this.formatNumber(this.GrandTotal, 2);
       }
 
     },
@@ -1861,7 +1685,7 @@ export default {
             this.details[i].quantity > this.details[i].stock
           ) {
             count += 1;
-            if(this.details[i].quantity > this.details[i].stock){
+            if (this.details[i].quantity > this.details[i].stock) {
               this.makeToast("warning", this.$t("LowStock"), this.$t("Warning"));
               return false;
             }
@@ -1887,10 +1711,10 @@ export default {
     keyup_OrderTax() {
       if (isNaN(this.sale.tax_rate)) {
         this.sale.tax_rate = 0;
-      } else if(this.sale.tax_rate == ''){
-         this.sale.tax_rate = 0;
+      } else if (this.sale.tax_rate == '') {
+        this.sale.tax_rate = 0;
         this.CalculTotal();
-      }else {
+      } else {
         this.CalculTotal();
       }
     },
@@ -1900,10 +1724,10 @@ export default {
     keyup_Discount() {
       if (isNaN(this.sale.discount)) {
         this.sale.discount = 0;
-      } else if(this.sale.discount == ''){
-         this.sale.discount = 0;
+      } else if (this.sale.discount == '') {
+        this.sale.discount = 0;
         this.CalculTotal();
-      }else {
+      } else {
         this.CalculTotal();
       }
     },
@@ -1927,7 +1751,7 @@ export default {
         return Number(this.sale.discount || 0);
       }
     },
-    
+
     // Calculate total discount amount (includes both manual and points) for display
     getCurrentSaleDiscountAmount() {
       try {
@@ -1963,10 +1787,10 @@ export default {
     keyup_Shipping() {
       if (isNaN(this.sale.shipping)) {
         this.sale.shipping = 0;
-      } else if(this.sale.shipping == ''){
-         this.sale.shipping = 0;
+      } else if (this.sale.shipping == '') {
+        this.sale.shipping = 0;
         this.CalculTotal();
-      }else {
+      } else {
         this.CalculTotal();
       }
     },
@@ -1986,7 +1810,7 @@ export default {
         // Start the progress bar.
         NProgress.start();
         NProgress.set(0.1);
-       
+
         {
           this.paymentProcessing = true;
           axios
@@ -1996,11 +1820,11 @@ export default {
               warehouse_id: this.sale.warehouse_id,
               statut: this.sale.statut,
               notes: this.sale.notes,
-              tax_rate: this.sale.tax_rate?this.sale.tax_rate:0,
-              TaxNet: this.sale.TaxNet?this.sale.TaxNet:0,
-              discount: this.sale.discount?this.sale.discount:0,
+              tax_rate: this.sale.tax_rate ? this.sale.tax_rate : 0,
+              TaxNet: this.sale.TaxNet ? this.sale.TaxNet : 0,
+              discount: this.sale.discount ? this.sale.discount : 0,
               discount_Method: String(this.sale.discount_Method || '2'), // '1' = percent, '2' = fixed
-              shipping: this.sale.shipping?this.sale.shipping:0,
+              shipping: this.sale.shipping ? this.sale.shipping : 0,
               GrandTotal: this.GrandTotal,
               details: this.details,
               payment: this.payment,
@@ -2043,10 +1867,10 @@ export default {
     //---------------------------------Get Product Details ------------------------\\
 
     Get_Product_Details(product_id, variant_id) {
-      axios.get("/show_product_data/" + product_id +"/"+ variant_id).then(response => {
-        this.product.discount           = response.data.discount;
-        this.product.DiscountNet        = response.data.DiscountNet;
-        this.product.discount_Method    = response.data.discount_method;
+      axios.get("/show_product_data/" + product_id + "/" + variant_id).then(response => {
+        this.product.discount = response.data.discount;
+        this.product.DiscountNet = response.data.DiscountNet;
+        this.product.discount_Method = response.data.discount_method;
         this.product.product_id = response.data.id;
         this.product.product_type = response.data.product_type;
         this.product.name = response.data.name;
@@ -2067,8 +1891,10 @@ export default {
         this.product.is_imei = response.data.is_imei;
         this.product.imei_number = '';
         this.product.price_type = 'retail';
+        this.product.batch_id = null;
+        this.product.expiry_date = null;
         this.applyPriceType(this.product);
-        
+
         // ensure min price respected
         if (this.product.Net_price < (this.product.min_price || 0)) {
           this.product.price_type = 'retail';
@@ -2082,6 +1908,7 @@ export default {
               this.product.batches = res.data.batches || [];
               this.add_product();
               this.CalculTotal();
+              console.log(res)
             })
             .catch(() => {
               this.product.batches = [];
@@ -2096,7 +1923,7 @@ export default {
       });
     },
 
-    applyPriceType(prod){
+    applyPriceType(prod) {
       // choose immutable baseline based on selected price type
       const selectedIsWholesale = prod.price_type === 'wholesale';
       const hasWholesaleBaseline = prod.wholesale_unit_price !== undefined && prod.wholesale_unit_price !== null && prod.wholesale_unit_price !== '';
@@ -2129,13 +1956,13 @@ export default {
       }
     },
 
-    onChangePriceType(detail, newType){
+    onChangePriceType(detail, newType) {
       if (newType) {
         detail.price_type = newType;
       }
       this.applyPriceType(detail);
       // enforce min price rule on change
-      if(detail.Net_price < detail.min_price){
+      if (detail.Net_price < detail.min_price) {
         this.makeToast('warning', this.$t('Price_below_min_not_allowed'), this.$t('Warning'));
         // revert to retail if wholesale violates minimum
         detail.price_type = 'retail';
@@ -2186,57 +2013,81 @@ export default {
 </script>
 
 <style>
+.input-with-icon {
+  display: flex;
+  align-items: center;
+}
 
-  .input-with-icon {
-    display: flex;
-    align-items: center;
-  }
+.scan-icon {
+  width: 50px;
+  /* Adjust size as needed */
+  height: 50px;
+  margin-right: 8px;
+  /* Adjust spacing as needed */
+  cursor: pointer;
+}
 
-  .scan-icon {
-    width: 50px; /* Adjust size as needed */
-    height: 50px;
-    margin-right: 8px; /* Adjust spacing as needed */
-    cursor: pointer;
-  }
+/* Points section helpers (lightweight, scoped to this page) */
+.hint {
+  font-size: 13px;
+  color: #6b7280;
+}
 
-  /* Points section helpers (lightweight, scoped to this page) */
-  .hint { font-size: 13px; color: #6b7280; }
-  .hint strong { color: #111827; }
-  .warn { color: #b45309; font-size: 12px; }
-  .ok { color: #065f46; font-size: 12px; }
-  .result { font-size: 13px; color: #1e3a8a; background: #eef2ff; border: 1px dashed #c7d2fe; border-radius: 10px; padding: 8px 10px; }
+.hint strong {
+  color: #111827;
+}
 
-  .table-responsive::after {
-    content: '';
-    display: block;
-    height: 150px; /* gives breathing space for last dropdown */
-  }
+.warn {
+  color: #b45309;
+  font-size: 12px;
+}
 
-  /* ===== v-select in input-group ===== */
-  .category-input-group {
-    display: flex;
-    align-items: stretch;
-  }
+.ok {
+  color: #065f46;
+  font-size: 12px;
+}
 
-  .category-input-group .v-select {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
+.result {
+  font-size: 13px;
+  color: #1e3a8a;
+  background: #eef2ff;
+  border: 1px dashed #c7d2fe;
+  border-radius: 10px;
+  padding: 8px 10px;
+}
 
-  .category-input-group .v-select .vs__dropdown-toggle {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
-    height: 100%;
-  }
+.table-responsive::after {
+  content: '';
+  display: block;
+  height: 150px;
+  /* gives breathing space for last dropdown */
+}
 
-  .category-input-group .v-select .vs__dropdown-toggle,
-  .category-input-group .v-select .vs__dropdown-toggle .vs__selected-options {
-    height: 100%;
-  }
+/* ===== v-select in input-group ===== */
+.category-input-group {
+  display: flex;
+  align-items: stretch;
+}
 
-  .category-add-btn {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
-    white-space: nowrap;
-  }
+.category-input-group .v-select {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.category-input-group .v-select .vs__dropdown-toggle {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  height: 100%;
+}
+
+.category-input-group .v-select .vs__dropdown-toggle,
+.category-input-group .v-select .vs__dropdown-toggle .vs__selected-options {
+  height: 100%;
+}
+
+.category-add-btn {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+  white-space: nowrap;
+}
 </style>

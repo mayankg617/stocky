@@ -33,6 +33,7 @@
                   <th>Quantity</th>
                   <th>Batch Number</th>
                   <th>Expiry Date</th>
+                  <th>Warehouse</th>
                 </tr>
               </thead>
               <tbody>
@@ -42,7 +43,7 @@
               <td>{{ purchase.quantity }}</td>
               <td>{{ purchase.batch_no }}</td>
               <td>{{ purchase.expiry_date }}</td>
-              
+              <td>{{ purchase.warehouse_name }}</td>
             </tr>
               </tbody>
             </table>

@@ -1592,6 +1592,15 @@ public function salesDetailsPage(Request $request, $id)
             $item['Type_barcode'] = $product_warehouse['product']->Type_barcode;
             $firstimage = explode(',', $product_warehouse['product']->image);
             $item['image'] = $firstimage[0];
+            $batch = \DB::table('product_batches')
+    ->where('product_id', $product_warehouse->product_id)
+    ->where('warehouse_id', $id)
+    //->whereNull('deleted_at')
+    ->orderBy('id', 'desc')
+    ->first();
+
+$item['batch_number'] = $batch->batch_no ?? null;
+$item['expiry_date']  = $batch->expiry_date ?? null;
 
             if ($product_warehouse['product']['unitSale']) {
 

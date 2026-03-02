@@ -99,6 +99,7 @@ class Product extends Model
     {
         return $this->belongsTo('App\Models\Brand');
     }
+    
 
     // Relationship for products that are combined in a combo
     public function combinedProducts()
