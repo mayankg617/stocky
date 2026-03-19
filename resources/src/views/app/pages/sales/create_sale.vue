@@ -77,7 +77,7 @@
                     </div>
                     <ul class="autocomplete-result-list" v-show="focused">
                       <li class="autocomplete-result" v-for="product_fil in product_filter"
-                        @mousedown="SearchProduct(product_fil)">{{ getResultValue(product_fil) }}</li>
+                       @mousedown="SearchProduct(product_fil)">{{ getResultValue(product_fil) }}</li>
                     </ul>
                   </div>
                 </b-col>
@@ -94,6 +94,7 @@
                           <th scope="col">{{ $t('Net_Unit_Price') }}</th>
                           <th scope="col">{{ $t('CurrentStock') }}</th>
                           <th scope="col">{{ $t('Qty') }}</th>
+                          <th scope="col">Brand</th>
                           <th scope="col">{{ $t('BatchNumber') }}</th>
                           <th scope="col">{{ $t('ExpiryDate') }}</th>
                           <th scope="col">{{ $t('Discount') }}</th>
@@ -108,7 +109,7 @@
                         <tr v-if="details.length <= 0">
                           <td colspan="11">{{ $t('NodataAvailable') }}</td>
                         </tr>
-                        <tr v-for="detail in details" :key="detail.detail_id">
+                        <tr v-for="(detail, index) in details" :key="detail.detail_id">
                           <td>{{ detail.detail_id }}</td>
                           <td>
                             <span>{{ detail.code }}</span>
@@ -149,6 +150,15 @@
                                 </b-input-group-append>
                               </b-input-group>
                             </div>
+                          </td>
+
+                          <td>
+                            <b-form-select v-model="detail.purchase_name" @change="reloadBatches(detail)">
+                              <option :value="null">Select Brand</option>
+                             <option v-for="b in detail.brands" :key="b" :value="b">
+                                {{ b }}
+                              </option>
+                            </b-form-select>
                           </td>
                           <!-- Batch selector -->
                           <td>
@@ -697,6 +707,8 @@ export default {
       accounts: [],
       client: {},
       products: [],
+      brands: [],
+selected_brand: null,
       details: [],
       detail: {
         detail_id: "",
@@ -718,7 +730,14 @@ export default {
         price_type: 'retail',
         retail_unit_price: "",
         wholesale_unit_price: "",
-        min_price: 0
+        min_price: 0,
+         // NEW
+        brands: [],
+        batches: [],
+        purchase_name: "",
+        batch_no: "",
+        expiry_date: ""
+
       },
       sales: [],
       payment_methods: [],
@@ -1400,7 +1419,22 @@ export default {
 
         }
         this.product.product_variant_id = result.product_variant_id;
-        this.Get_Product_Details(result.id, result.product_variant_id);
+
+          // ⭐ Load available brands for this product
+//          axios.get(`/product-brands/${result.id}/${this.sale.warehouse_id}`)
+// .then(res => {
+//     this.details[this.details.length - 1].brands = res.data
+// }).then(() => {
+
+//     // auto select brand if only one exists
+//     if (this.details[index].brands.length === 1) {
+//         this.details[index].purchase_name = this.details[index].brands[0];
+//     }
+
+// });
+
+          // Continue normal product loading
+          this.Get_Product_Details(result.id, result.product_variant_id);
       }
 
       this.search_input = '';
@@ -1524,7 +1558,26 @@ export default {
         this.product.detail_id = 1;
       }
 
-      this.details.push(this.product);
+      // ensure brand structure exists
+  this.product.brands = [];
+  this.product.purchase_name = null;
+
+  this.details.push(this.product);
+
+  // load brands AFTER row exists
+  axios.get(`/product-brands/${this.product.product_id}/${this.sale.warehouse_id}`)
+    .then(res => {
+      const lastIndex = this.details.length - 1;
+      this.details[lastIndex].brands = res.data;
+
+      if (res.data.length === 1) {
+        this.details[lastIndex].purchase_name = res.data[0];
+      }
+    });
+
+       //
+
+     // this.details.push(this.product);
       if (this.product.is_imei) {
         this.Modal_Updat_Detail(this.product);
       }
@@ -1903,18 +1956,21 @@ export default {
 
         // Fetch available batches for this product in selected warehouse
         if (this.sale && this.sale.warehouse_id) {
-          axios.get('/product_batches/' + response.data.id + '/' + this.sale.warehouse_id)
+          axios.get('/product_batches/' + response.data.id + '/' + this.sale.warehouse_id, {
+          params: {
+            brand: this.selected_brand
+          }
+        })
             .then(res => {
-              this.product.batches = res.data.batches || [];
-              this.add_product();
-              this.CalculTotal();
-              console.log(res)
-            })
-            .catch(() => {
-              this.product.batches = [];
-              this.add_product();
-              this.CalculTotal();
-            });
+          this.product.batches = res.data.batches || [];
+        })
+        .catch(() => {
+          this.product.batches = [];
+        })
+        .finally(() => {
+          this.add_product();
+          this.CalculTotal();
+        });
         } else {
           this.product.batches = [];
           this.add_product();
@@ -1983,6 +2039,20 @@ export default {
         detail.expiry_date = null;
       }
       this.$forceUpdate();
+    },
+
+    reloadBatches(detail) {
+
+      axios.get('/product_batches/' + detail.product_id + '/' + this.sale.warehouse_id, {
+        params: {
+          brand: detail.purchase_name || this.selected_brand
+        }
+      }).then(res => {
+
+        detail.batches = res.data.batches;
+
+      });
+
     },
 
     //---------------------------------------Get Elements ------------------------------\\

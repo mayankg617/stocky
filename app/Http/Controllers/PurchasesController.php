@@ -225,6 +225,7 @@ class PurchasesController extends BaseController
                     'discount' => $value['discount'],
                     'discount_method' => $value['discount_Method'],
                     'product_id' => $value['product_id'],
+                    'purchase_name' => $value['purchase_name'] ?? null,
                     'product_variant_id' => $value['product_variant_id'],
                     'total' => $value['subtotal'],
                     'imei_number' => $value['imei_number'],
@@ -948,27 +949,41 @@ if (!empty($value['batch_no']) || !empty($value['expiry_date'])) {
     }
 
     // ---------------- Get Product Batches for a given warehouse ------------------\
-    public function getProductBatches(Request $request, $product_id, $warehouse_id)
-    {
-        $this->authorizeForUser($request->user('api'), 'view', Purchase::class);
+   public function getProductBatches(Request $request, $product_id, $warehouse_id)
+{
+    $this->authorizeForUser($request->user('api'), 'view', Purchase::class);
 
-        $batches = \DB::table('product_batches')
-            ->leftjoin('purchases', 'product_batches.purchase_id', '=', 'purchases.id')
-            ->where('product_batches.product_id', $product_id)
-            ->where(function ($q) use ($warehouse_id) {
-    $q->where('purchases.warehouse_id', $warehouse_id)
-      ->orWhere('product_batches.warehouse_id', $warehouse_id);
+    $brand = $request->brand ?? null;
+
+    $query = \DB::table('product_batches')
+        ->leftJoin('purchases', 'product_batches.purchase_id', '=', 'purchases.id')
+        ->leftJoin('purchase_details', function ($join) {
+    $join->on('product_batches.purchase_id', '=', 'purchase_details.purchase_id')
+         ->on('product_batches.product_id', '=', 'purchase_details.product_id');
 })
-            ->whereRaw('product_batches.quantity > 0')
-            ->whereNull('purchases.deleted_at')
-           // ->whereNull('product_batches.deleted_at')
-            ->select('product_batches.id', 'product_batches.batch_no', 'product_batches.expiry_date', 'product_batches.quantity')
-            ->orderByRaw("CASE WHEN product_batches.expiry_date IS NULL THEN 1 ELSE 0 END, product_batches.expiry_date ASC")
-            ->get();
-           // print_r($batches);exit;
+        ->where('product_batches.product_id', $product_id)
+        ->where(function ($q) use ($warehouse_id) {
+            $q->where('purchases.warehouse_id', $warehouse_id)
+              ->orWhere('product_batches.warehouse_id', $warehouse_id);
+        })
+        ->whereRaw('product_batches.quantity > 0')
+        ->whereNull('purchases.deleted_at')
+        ->select(
+            'product_batches.id',
+            'product_batches.batch_no',
+            'product_batches.expiry_date',
+            'product_batches.quantity'
+        )
+        ->orderByRaw("CASE WHEN product_batches.expiry_date IS NULL THEN 1 ELSE 0 END, product_batches.expiry_date ASC");
 
-        return response()->json(['batches' => $batches]);
+    if ($brand) {
+        $query->where('purchase_details.purchase_name', $brand);
     }
+
+    $batches = $query->get();
+
+    return response()->json(['batches' => $batches]);
+}
 
     // -------------- purchase PDF -----------\\
 
@@ -2228,5 +2243,18 @@ if (!empty($value['batch_no']) || !empty($value['expiry_date'])) {
             'message' => 'Document deleted successfully',
             'status' => true
         ]);
-    }
+   }  
+    // ------------- Get Product Brands for a Purchase ----------\\
+    public function getProductBrands($product_id, $warehouse_id)
+{
+    $brands = DB::table('purchase_details')
+        ->join('purchases', 'purchase_details.purchase_id', '=', 'purchases.id')
+        ->where('purchase_details.product_id', $product_id)
+        ->where('purchases.warehouse_id', $warehouse_id)
+        ->whereNotNull('purchase_details.purchase_name')
+        ->groupBy('purchase_details.purchase_name')
+        ->pluck('purchase_details.purchase_name');
+
+    return response()->json($brands);
+}
 }

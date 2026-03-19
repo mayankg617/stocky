@@ -1590,6 +1590,7 @@ public function salesDetailsPage(Request $request, $id)
             $item['id'] = $product_warehouse->product_id;
             $item['product_type'] = $product_warehouse['product']->type;
             $item['Type_barcode'] = $product_warehouse['product']->Type_barcode;
+           // $item['brand'] = $product_warehouse['product']->brand->name ?? null;
             $firstimage = explode(',', $product_warehouse['product']->image);
             $item['image'] = $firstimage[0];
             $batch = \DB::table('product_batches')

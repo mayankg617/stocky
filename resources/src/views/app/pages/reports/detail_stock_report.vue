@@ -25,6 +25,44 @@
               </tbody>
             </table>
           </b-col>
+            <!-- Batch Wise Stock -->
+              <b-col md="7" class="mt-4">
+
+                <h5 class="mb-3">Batch Wise Stock</h5>
+
+                <div v-for="(batches, brand) in groupedBatchStock" :key="brand" class="mb-4">
+
+                <h6 class="text-primary">{{ brand }}</h6>
+
+                <table class="table table-sm table-bordered">
+
+                <thead>
+                <tr>
+                <th>Batch</th>
+                <th>Expiry</th>
+                <th>Warehouse</th>
+                <th>Quantity</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                <tr v-for="batch in batches" :key="batch.batch_no">
+
+                <td>{{ batch.batch_no }}</td>
+                <td>{{ batch.expiry_date }}</td>
+                <td>{{ batch.warehouse }}</td>
+                <td>{{ formatNumber(batch.quantity,2) }} {{product.unit}}</td>
+
+                </tr>
+
+                </tbody>
+
+                </table>
+
+                </div>
+
+                </b-col>
           <!-- Warehouse Variants Quantity -->
           <b-col md="7" v-if="product.is_variant == 'yes'" class="mt-4">
             <table class="table table-hover table-sm">
@@ -448,6 +486,7 @@ export default {
 
       isLoading: true,
       product:{},
+      batchStock: [],
       purchases: [],
       sales: [],
       quotations: [],
@@ -462,6 +501,22 @@ export default {
 
   computed: {
     ...mapGetters(["currentUser"]),
+   groupedBatchStock() {
+    const grouped = {};
+
+    this.batchStock.forEach(item => {
+
+        const brand = item.brand || "No Brand";
+
+        if (!grouped[brand]) {
+            grouped[brand] = [];
+        }
+
+        grouped[brand].push(item);
+    });
+
+    return grouped;
+},
     columns_quotations() {
       return [
          {
@@ -1096,6 +1151,25 @@ export default {
         });
     },
 
+    //--------------------------- Get Batch Stock By Product ----------------\\
+Get_Batch_Stock() {
+
+  axios.get("/stock-batch/" + this.$route.params.id)
+
+  .then(response => {
+
+    this.batchStock = response.data;
+
+  })
+
+  .catch(error => {
+
+    console.log(error);
+
+  });
+
+},
+
 
     //------------------------------Formetted Numbers -------------------------\\
     formatNumber(number, dec) {
@@ -1442,6 +1516,7 @@ export default {
 
   created: function() {
     this.showDetails();
+    this.Get_Batch_Stock();
     this.Get_Sales(1);
     this.Get_Purchases(1);
     this.Get_Quotations(1);

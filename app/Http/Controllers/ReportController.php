@@ -7064,4 +7064,41 @@ class ReportController extends BaseController
             'warehouses' => $warehouses,
         ]);
     }
+public function Stock_Report_By_Batch($product_id)
+{
+
+    // $this->authorizeForUser($request->user('api'), 'WarehouseStock', Product::class);
+
+    $stock = DB::table('product_batches')
+
+        ->join('products', 'products.id', '=', 'product_batches.product_id')
+
+        ->join('purchase_details', function ($join) {
+            $join->on('purchase_details.purchase_id', '=', 'product_batches.purchase_id')
+                 ->on('purchase_details.product_id', '=', 'product_batches.product_id');
+        })
+
+        ->join('warehouses', 'warehouses.id', '=', 'product_batches.warehouse_id')
+        
+        ->where('product_batches.product_id', $product_id)   // ⭐ IMPORTANT: filter by product_id here
+        ->where('product_batches.quantity', '>', 0)
+
+        ->select(
+            'products.name as product_name',
+            'purchase_details.purchase_name as brand',
+            'product_batches.batch_no',
+            'product_batches.expiry_date',
+            'warehouses.name as warehouse',
+            'product_batches.quantity'
+        )
+
+        ->orderBy('products.name')
+        ->orderBy('purchase_details.purchase_name')
+        ->orderBy('product_batches.expiry_date')
+
+        ->get();
+        
+
+    return response()->json($stock);
 }
+    }

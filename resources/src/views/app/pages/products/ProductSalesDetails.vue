@@ -24,17 +24,19 @@
               <table class="sales-table">
                 <thead>
                   <tr>
-                    <th>Date</th>
-                    <th>Farmer Name</th>
-                    <th>Quantity</th>
-                    <th>Batch Number</th>
-                    <th>Expiry Date</th>
+                    <th>DATE</th>
+                    <th>FARMER NAME</th>
+                    <th>BRAND</th>
+                    <th>QUANTITY</th>
+                    <th>BATCH NUMBER</th>
+                    <th>EXPIRY DATE</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr v-for="sale in sales" :key="sale.sale_id">
                     <td>{{ sale.date }}</td>
                     <td>{{ sale.client_name }}</td>
+                    <td>{{ sale.purchase_name}}</td>
                     <td>{{ sale.quantity }}</td>
                     <td>{{ sale.batch_no }}</td>
                     <td>{{ sale.expiry_date }}</td>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\Store\SubscriberController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductsController;
+use App\Http\Controllers\ReportController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -864,3 +865,5 @@ Route::get('damage_pdf/{id}', 'DamageController@damage_pdf');
 
 Route::get('products/{id}/details',[ProductsController::class, 'detailsPage']);
 Route::get('products/{id}/sales-details',[ProductsController::class, 'salesDetailsPage']);
+Route::get('product-brands/{product}/{warehouse}', [App\Http\Controllers\PurchasesController::class, 'getProductBrands']);
+Route::get('/stock-batch/{id}', [ReportController::class,'Stock_Report_By_Batch']);

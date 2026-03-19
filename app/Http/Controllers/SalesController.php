@@ -89,13 +89,13 @@ class SalesController extends BaseController
         $Sales = Sale::with('facture', 'client', 'warehouse', 'user')
             ->where('deleted_at', '=', null)
             ->where(function ($query) use ($view_records) {
-                if (! $view_records) {
+                if (!$view_records) {
                     return $query->where('user_id', '=', Auth::user()->id);
                 }
             });
         // Multiple Filter
         $Filtred = $helpers->filter($Sales, $columns, $param, $request)
-        // Search With Multiple Param
+            // Search With Multiple Param
             ->where(function ($query) use ($request) {
                 return $query->when($request->filled('search'), function ($query) use ($request) {
                     return $query->where('Ref', 'LIKE', "%{$request->search}%")
@@ -129,7 +129,7 @@ class SalesController extends BaseController
         foreach ($Sales as $Sale) {
 
             $item['id'] = $Sale['id'];
-            $item['date'] = $Sale['date'].' '.$Sale['time'];
+            $item['date'] = $Sale['date'] . ' ' . $Sale['time'];
             $item['Ref'] = $Sale['Ref'];
             $item['created_by'] = $Sale['user']->username;
             $item['statut'] = $Sale['statut'];
@@ -309,6 +309,38 @@ class SalesController extends BaseController
                                 $product_warehouse->qte -= $value['quantity'] * $unit->operator_value;
                             }
                             $product_warehouse->save();
+
+                            // Batch deduction for products without variant
+                            if (!empty($value['batch_id'])) {
+
+                                $batch = \DB::table('product_batches')
+                                    ->where('id', $value['batch_id'])
+                                    ->lockForUpdate()
+                                    ->first();
+
+                                if (!$batch) {
+                                    throw new \Exception('Selected batch not found.');
+                                }
+
+                                // Convert sale quantity to base unit
+                                if ($unit->operator == '/') {
+                                    $removedQty = $value['quantity'] / $unit->operator_value;
+                                } else {
+                                    $removedQty = $value['quantity'] * $unit->operator_value;
+                                }
+
+                                if ($batch->quantity < $removedQty) {
+                                    throw new \Exception(
+                                        'Cannot sell ' . $removedQty . ' units. Only ' . $batch->quantity . ' available in selected batch.'
+                                    );
+                                }
+
+                                \DB::table('product_batches')
+                                    ->where('id', $value['batch_id'])
+                                    ->update([
+                                        'quantity' => $batch->quantity - $removedQty
+                                    ]);
+                            }
                         }
                     }
                 }
@@ -323,7 +355,7 @@ class SalesController extends BaseController
             if ($request->payment['status'] != 'pending') {
                 $sale = Sale::findOrFail($order->id);
                 // Check If User Has Permission view All Records
-                if (! $view_records) {
+                if (!$view_records) {
                     // Check If User->id === sale->id
                     $this->authorizeForUser($request->user('api'), 'check_record', $sale);
                 }
@@ -439,14 +471,14 @@ class SalesController extends BaseController
                     $sale->update([
                         'quickbooks_realm_id' => $realmGuess ?: $sale->quickbooks_realm_id,
                         'quickbooks_sync_error' => ($res['error'] ?? 'Unknown error')
-                            .(isset($res['http']) ? " (HTTP {$res['http']})" : '')
-                            .(isset($res['body']) ? " :: {$res['body']}" : ''),
+                            . (isset($res['http']) ? " (HTTP {$res['http']})" : '')
+                            . (isset($res['body']) ? " :: {$res['body']}" : ''),
                     ]);
                     $qboSync = 'failed';
                 }
             }
         } catch (\Throwable $e) {
-            \Log::warning('QuickBooks sync failed (non-blocking): '.$e->getMessage(), [
+            \Log::warning('QuickBooks sync failed (non-blocking): ' . $e->getMessage(), [
                 'sale_id' => $sale->id,
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -485,7 +517,7 @@ class SalesController extends BaseController
                 return response()->json(['success' => false, 'Return exist for the Transaction' => false], 403);
             } else {
                 // Check If User Has Permission view All Records
-                if (! $view_records) {
+                if (!$view_records) {
                     // Check If User->id === Sale->id
                     $this->authorizeForUser($request->user('api'), 'check_record', $current_Sale);
                 }
@@ -539,7 +571,7 @@ class SalesController extends BaseController
                                 $product_warehouse->save();
 
                                 // Restore batch quantity if this detail was assigned to a batch
-                                if (! empty($value->batch_id)) {
+                                if (!empty($value->batch_id)) {
                                     \DB::table('product_batches')
                                         ->where('id', $value->batch_id)
                                         ->update(['quantity' => \DB::raw('GREATEST(quantity + ' . (float) $addQty . ', 0)')]);
@@ -561,7 +593,7 @@ class SalesController extends BaseController
                                 }
                                 $product_warehouse->save();
 
-                                if (! empty($value->batch_id)) {
+                                if (!empty($value->batch_id)) {
                                     \DB::table('product_batches')
                                         ->where('id', $value->batch_id)
                                         ->update(['quantity' => \DB::raw('GREATEST(quantity + ' . (float) $addQty . ', 0)')]);
@@ -570,7 +602,7 @@ class SalesController extends BaseController
                         }
                     }
                     // Delete Detail
-                    if (! in_array($old_products_id[$key], $new_products_id)) {
+                    if (!in_array($old_products_id[$key], $new_products_id)) {
                         $SaleDetail = SaleDetail::findOrFail($value->id);
                         $SaleDetail->delete();
                     }
@@ -687,7 +719,7 @@ class SalesController extends BaseController
                         $orderDetails['total'] = $prod_detail['subtotal'];
                         $orderDetails['imei_number'] = $prod_detail['imei_number'];
 
-                        if (! in_array($prod_detail['id'], $old_products_id)) {
+                        if (!in_array($prod_detail['id'], $old_products_id)) {
                             $orderDetails['date'] = $request['date'];
                             $orderDetails['sale_unit_id'] = $unit_prod ? $unit_prod->id : null;
                             SaleDetail::Create($orderDetails);
@@ -704,12 +736,12 @@ class SalesController extends BaseController
                 $oldClient = Client::find($current_Sale->client_id);
                 $newClient = Client::find($request->client_id);
 
-                $previous_used   = (int) ($current_Sale->used_points ?? 0);
+                $previous_used = (int) ($current_Sale->used_points ?? 0);
                 $previous_earned = (int) ($current_Sale->earned_points ?? 0);
 
                 // Use the same convention as store(): trust used_points coming from frontend
                 $discount_from_points = (float) ($request->discount_from_points ?? 0);
-                $new_used   = (float) ($request->used_points ?? 0);
+                $new_used = (float) ($request->used_points ?? 0);
                 $new_earned = (float) $total_points_earned;
 
                 // Run loyalty logic if:
@@ -845,7 +877,7 @@ class SalesController extends BaseController
             $qb = app(\App\Services\QuickBooksService::class);
             $res = $qb->updateInvoice($sale);
 
-            if (! ($res['ok'] ?? false)) {
+            if (!($res['ok'] ?? false)) {
                 \Log::warning('QBO update failed (no create fallback)', [
                     'sale_id' => $sale->id,
                     'error' => $res['error'] ?? 'unknown',
@@ -853,7 +885,7 @@ class SalesController extends BaseController
                     'body' => $res['body'] ?? null,
                 ]);
                 $sale->update([
-                    'quickbooks_sync_error' => substr(($res['error'] ?? '').' '.($res['body'] ?? ''), 0, 65000),
+                    'quickbooks_sync_error' => substr(($res['error'] ?? '') . ' ' . ($res['body'] ?? ''), 0, 65000),
                 ]);
                 $qboSync = 'failed';
             } else {
@@ -863,14 +895,14 @@ class SalesController extends BaseController
                     'quickbooks_synced_at' => now(),
                     'quickbooks_sync_error' => null,
                 ];
-                if (empty($sale->quickbooks_invoice_id) && ! empty($res['id'])) {
+                if (empty($sale->quickbooks_invoice_id) && !empty($res['id'])) {
                     $updates['quickbooks_invoice_id'] = (string) $res['id'];
                 }
                 $sale->update($updates);
                 $qboSync = 'ok';
             }
         } catch (\Throwable $e) {
-            \Log::warning('QBO sync (update) failed non-blocking: '.$e->getMessage(), [
+            \Log::warning('QBO sync (update) failed non-blocking: ' . $e->getMessage(), [
                 'sale_id' => $sale->id,
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -913,7 +945,7 @@ class SalesController extends BaseController
                 abort(403, 'Return exists for this sale; cannot delete.');
             }
 
-            if (! $view_records) {
+            if (!$view_records) {
                 $this->authorizeForUser($request->user('api'), 'check_record', $current);
             }
 
@@ -921,13 +953,13 @@ class SalesController extends BaseController
             if ($current->statut === 'completed') {
                 foreach ($current->details as $d) {
                     $product = $d->product;
-                    if (! $product || ($product->type ?? null) === 'is_service') {
+                    if (!$product || ($product->type ?? null) === 'is_service') {
                         continue;
                     }
 
                     // find unit used on the line (or fallback to product sale unit)
                     $unit = $d->sale_unit_id ? \App\Models\Unit::find($d->sale_unit_id)
-                                            : optional($product->unitSale);
+                        : optional($product->unitSale);
 
                     $qty = (float) $d->quantity;
                     $opv = max((float) ($unit->operator_value ?? 1), 1);
@@ -936,18 +968,33 @@ class SalesController extends BaseController
                     $pw = \App\Models\product_warehouse::whereNull('deleted_at')
                         ->where('warehouse_id', $current->warehouse_id)
                         ->where('product_id', $d->product_id)
-                        ->when($d->product_variant_id, fn ($q) => $q->where('product_variant_id', $d->product_variant_id))
+                        ->when($d->product_variant_id, fn($q) => $q->where('product_variant_id', $d->product_variant_id))
                         ->first();
-
-                    if ($pw && $unit) {
+                    if ($pw) {
                         $pw->qte = max(0, $pw->qte + $addQ);
                         $pw->save();
-                        // Restore batch quantity if this detail belonged to a batch
-                        if (! empty($d->batch_id)) {
-                            \DB::table('product_batches')
+                    }
+
+
+                    // Restore batch quantity
+                    if (!empty($d->batch_id)) {
+                        $batch = \DB::table('product_batches')
+                            ->where('product_id', $d->product_id)
+                            ->where('id', $d->batch_id)
+                            ->where('warehouse_id', $current->warehouse_id)
+                            ->first();
+
+                        if ($batch) {
+                            $resultt = \DB::table('product_batches')
+                                ->where('product_id', $d->product_id)
                                 ->where('id', $d->batch_id)
-                                ->update(['quantity' => \DB::raw('GREATEST(quantity + ' . (float) $addQ . ', 0)')]);
+                                ->where('warehouse_id', $current->warehouse_id)
+                                ->update([
+                                    'quantity' => $batch->quantity + $addQ
+                                ]);
                         }
+
+
                     }
                 }
             }
@@ -1013,7 +1060,7 @@ class SalesController extends BaseController
             $qb = app(\App\Services\QuickBooksService::class);
             $res = $qb->deleteInvoice($saleStub);
 
-            if (! ($res['ok'] ?? false)) {
+            if (!($res['ok'] ?? false)) {
                 \Log::warning('QBO delete failed (non-blocking)', [
                     'sale_id' => $id,
                     'error' => $res['error'] ?? 'unknown',
@@ -1025,7 +1072,7 @@ class SalesController extends BaseController
                 $deletedSale = \App\Models\Sale::withTrashed()->find($id) ?: \App\Models\Sale::query()->find($id);
                 if ($deletedSale) {
                     $deletedSale->update([
-                        'quickbooks_sync_error' => substr(($res['error'] ?? '').' '.($res['body'] ?? ''), 0, 65000),
+                        'quickbooks_sync_error' => substr(($res['error'] ?? '') . ' ' . ($res['body'] ?? ''), 0, 65000),
                     ]);
                 }
                 $qboSync = 'failed';
@@ -1040,7 +1087,7 @@ class SalesController extends BaseController
                 $qboSync = 'ok';
             }
         } catch (\Throwable $e) {
-            \Log::warning('QBO delete failed (non-blocking): '.$e->getMessage(), [
+            \Log::warning('QBO delete failed (non-blocking): ' . $e->getMessage(), [
                 'sale_id' => $id,
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -1073,7 +1120,7 @@ class SalesController extends BaseController
                     $shipment_data = Shipment::where('sale_id', $sale_id)->first();
 
                     // Check If User Has Permission view All Records
-                    if (! $view_records) {
+                    if (!$view_records) {
                         // Check If User->id === current_Sale->id
                         $this->authorizeForUser($request->user('api'), 'check_record', $current_Sale);
                     }
@@ -1125,6 +1172,34 @@ class SalesController extends BaseController
                                     $product_warehouse->save();
                                 }
                             }
+
+
+                            // Restore batch quantity
+                            // if (!empty($current_Sale->batch_id)) {
+
+
+                            //     \DB::enableQueryLog();
+                            //     $batch = \DB::table('product_batches')
+                            //         ->where('product_id', $d->product_id)
+                            //         ->where('id', $d->batch_id)
+                            //         ->where('warehouse_id', $current_Sale->warehouse_id)
+                            //         ->first();
+
+
+
+
+                            //     if ($batch) {
+                            //         $resultt = \DB::table('product_batches')
+                            //             ->where('product_id', $d->product_id)
+                            //             ->where('id', $d->batch_id)
+                            //             ->where('warehouse_id', $current->warehouse_id)
+                            //             ->update([
+                            //                 'quantity' => $batch->quantity + $addQ
+                            //             ]);
+                            //     }
+
+
+                            // }
                         }
 
                     }
@@ -1199,13 +1274,13 @@ class SalesController extends BaseController
         $details = [];
 
         // Check If User Has Permission view All Records
-        if (! $view_records) {
+        if (!$view_records) {
             // Check If User->id === sale->id
             $this->authorizeForUser($request->user('api'), 'check_record', $sale_data);
         }
 
         $sale_details['Ref'] = $sale_data->Ref;
-        $sale_details['date'] = $sale_data->date.' '.$sale_data->time;
+        $sale_details['date'] = $sale_data->date . ' ' . $sale_data->time;
         $sale_details['note'] = $sale_data->notes;
         $sale_details['statut'] = $sale_data->statut;
         $sale_details['warehouse'] = $sale_data['warehouse']->name;
@@ -1257,7 +1332,7 @@ class SalesController extends BaseController
                     ->where('id', $detail->product_variant_id)->first();
 
                 $data['code'] = $productsVariants->code;
-                $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
 
             } else {
                 $data['code'] = $detail['product']['code'];
@@ -1316,7 +1391,7 @@ class SalesController extends BaseController
 
         $item['id'] = $sale->id;
         $item['Ref'] = $sale->Ref;
-        $item['date'] = $sale->date.' '.$sale->time;
+        $item['date'] = $sale->date . ' ' . $sale->time;
         $item['discount'] = number_format($sale->discount, 2, '.', '');
         $item['discount_Method'] = $sale->discount_Method ?? '2'; // '1' for percentage, '2' for fixed
         $item['discount_from_points'] = number_format($sale->discount_from_points ?? 0, 2, '.', ''); // Include points discount for receipt display
@@ -1351,7 +1426,7 @@ class SalesController extends BaseController
                     ->where('id', $detail->product_variant_id)->first();
 
                 $data['code'] = $productsVariants->code;
-                $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
 
             } else {
                 $data['code'] = $detail['product']['code'];
@@ -1379,7 +1454,7 @@ class SalesController extends BaseController
 
         // Build ZATCA QR payload if enabled and VAT number is set
         $zatcaQr = null;
-        if ($settings && (bool) $settings->zatca_enabled && ! empty($settings->vat_number)) {
+        if ($settings && (bool) $settings->zatca_enabled && !empty($settings->vat_number)) {
             $sellerName = $settings->company_name_ar ?: $settings->CompanyName;
             $timestampIso = ZatcaQr::toIso8601($item['date'], config('app.timezone'));
             $totalWithVat = $item['GrandTotal'];
@@ -1412,7 +1487,7 @@ class SalesController extends BaseController
         $Sale = Sale::findOrFail($id);
 
         // Check If User Has Permission view All Records
-        if (! $view_records) {
+        if (!$view_records) {
             // Check If User->id === Sale->id
             $this->authorizeForUser($request->user('api'), 'check_record', $Sale);
         }
@@ -1420,7 +1495,7 @@ class SalesController extends BaseController
         $payments = PaymentSale::with('sale', 'payment_method')
             ->where('sale_id', $id)
             ->where(function ($query) use ($view_records) {
-                if (! $view_records) {
+                if (!$view_records) {
                     return $query->where('user_id', '=', Auth::user()->id);
                 }
             })->orderBy('id', 'DESC')->get();
@@ -1438,10 +1513,10 @@ class SalesController extends BaseController
         // Get prefix from settings, fallback to 'SL' if not set
         $setting = \App\Models\Setting::where('deleted_at', '=', null)->first();
         $prefix = !empty($setting->sale_prefix) ? $setting->sale_prefix : 'SL';
-        
+
         // Get the last sale with a reference that starts with the prefix
         $last = DB::table('sales')
-            ->where('Ref', 'like', $prefix.'_%')
+            ->where('Ref', 'like', $prefix . '_%')
             ->latest('id')
             ->first();
 
@@ -1452,12 +1527,12 @@ class SalesController extends BaseController
             // Ensure valid structure before processing
             if (isset($nwMsg[1]) && is_numeric($nwMsg[1])) {
                 $inMsg = $nwMsg[1] + 1;
-                $code = $nwMsg[0].'_'.str_pad($inMsg, 4, '0', STR_PAD_LEFT);
+                $code = $nwMsg[0] . '_' . str_pad($inMsg, 4, '0', STR_PAD_LEFT);
             } else {
-                $code = $prefix.'_0001'; // Fallback if reference is corrupted
+                $code = $prefix . '_0001'; // Fallback if reference is corrupted
             }
         } else {
-            $code = $prefix.'_0001';
+            $code = $prefix . '_0001';
         }
 
         return $code;
@@ -1486,7 +1561,7 @@ class SalesController extends BaseController
         $sale['shipping'] = number_format($sale_data->shipping, 2, '.', '');
         $sale['statut'] = $sale_data->statut;
         $sale['Ref'] = $sale_data->Ref;
-        $sale['date'] = $sale_data->date.' '.$sale_data->time;
+        $sale['date'] = $sale_data->date . ' ' . $sale_data->time;
         $sale['GrandTotal'] = number_format($sale_data->GrandTotal, 2, '.', '');
         $sale['paid_amount'] = number_format($sale_data->paid_amount, 2, '.', '');
         $sale['due'] = number_format($sale['GrandTotal'] - $sale['paid_amount'], 2, '.', '');
@@ -1516,7 +1591,7 @@ class SalesController extends BaseController
                     ->where('id', $detail->product_variant_id)->first();
 
                 $data['code'] = $productsVariants->code;
-                $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
             } else {
                 $data['code'] = $detail['product']['code'];
                 $data['name'] = $detail['product']['name'];
@@ -1602,7 +1677,7 @@ class SalesController extends BaseController
         $sale['shipping'] = number_format($sale_data->shipping, 2, '.', '');
         $sale['statut'] = $sale_data->statut;
         $sale['Ref'] = $sale_data->Ref;
-        $sale['date'] = $sale_data->date.' '.$sale_data->time;
+        $sale['date'] = $sale_data->date . ' ' . $sale_data->time;
         $sale['GrandTotal'] = number_format($sale_data->GrandTotal, 2, '.', '');
         $sale['paid_amount'] = number_format($sale_data->paid_amount, 2, '.', '');
         $sale['due'] = number_format($sale['GrandTotal'] - $sale['paid_amount'], 2, '.', '');
@@ -1630,7 +1705,7 @@ class SalesController extends BaseController
                     ->where('id', $detail->product_variant_id)->first();
 
                 $data['code'] = $productsVariants->code;
-                $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
             } else {
                 $data['code'] = $detail['product']['code'];
                 $data['name'] = $detail['product']['name'];
@@ -1688,12 +1763,12 @@ class SalesController extends BaseController
         // do not work as <img src>. Convert any ".../public/images/<file>" path (Windows or Unix)
         // into a proper web URL so logos/images display.
         try {
-            $webImagesPath = rtrim(url('images'), '/').'/';
+            $webImagesPath = rtrim(url('images'), '/') . '/';
             $Html = preg_replace_callback(
                 '~(?:[A-Za-z]:)?[\/\\\\][^"\']*?[\/\\\\]public[\/\\\\]images[\/\\\\]([^"\'>]+)~',
                 function ($m) use ($webImagesPath) {
                     $file = ltrim($m[1], '/\\');
-                    return $webImagesPath.$file;
+                    return $webImagesPath . $file;
                 },
                 $Html
             );
@@ -1757,15 +1832,17 @@ class SalesController extends BaseController
                 ->findOrFail($id);
             $details = [];
             // Check If User Has Permission view All Records
-            if (! $view_records) {
+            if (!$view_records) {
                 // Check If User->id === sale->id
                 $this->authorizeForUser($request->user('api'), 'check_record', $Sale_data);
             }
 
             if ($Sale_data->client_id) {
-                if (Client::where('id', $Sale_data->client_id)
-                    ->where('deleted_at', '=', null)
-                    ->first()) {
+                if (
+                    Client::where('id', $Sale_data->client_id)
+                        ->where('deleted_at', '=', null)
+                        ->first()
+                ) {
                     $sale['client_id'] = $Sale_data->client_id;
                 } else {
                     $sale['client_id'] = '';
@@ -1775,9 +1852,11 @@ class SalesController extends BaseController
             }
 
             if ($Sale_data->warehouse_id) {
-                if (Warehouse::where('id', $Sale_data->warehouse_id)
-                    ->where('deleted_at', '=', null)
-                    ->first()) {
+                if (
+                    Warehouse::where('id', $Sale_data->warehouse_id)
+                        ->where('deleted_at', '=', null)
+                        ->first()
+                ) {
                     $sale['warehouse_id'] = $Sale_data->warehouse_id;
                 } else {
                     $sale['warehouse_id'] = '';
@@ -1829,7 +1908,7 @@ class SalesController extends BaseController
                     $item_product ? $data['del'] = 0 : $data['del'] = 1;
                     $data['product_variant_id'] = $detail->product_variant_id;
                     $data['code'] = $productsVariants->code;
-                    $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                    $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
 
                     if ($unit && $unit->operator == '/') {
                         $stock = $item_product ? $item_product->qte * $unit->operator_value : 0;
@@ -1939,15 +2018,17 @@ class SalesController extends BaseController
             ->findOrFail($id);
         $details = [];
         // Check If User Has Permission view All Records
-        if (! $view_records) {
+        if (!$view_records) {
             // Check If User->id === Quotation->id
             $this->authorizeForUser($request->user('api'), 'check_record', $Quotation);
         }
 
         if ($Quotation->client_id) {
-            if (Client::where('id', $Quotation->client_id)
-                ->where('deleted_at', '=', null)
-                ->first()) {
+            if (
+                Client::where('id', $Quotation->client_id)
+                    ->where('deleted_at', '=', null)
+                    ->first()
+            ) {
                 $sale['client_id'] = $Quotation->client_id;
             } else {
                 $sale['client_id'] = '';
@@ -1957,9 +2038,11 @@ class SalesController extends BaseController
         }
 
         if ($Quotation->warehouse_id) {
-            if (Warehouse::where('id', $Quotation->warehouse_id)
-                ->where('deleted_at', '=', null)
-                ->first()) {
+            if (
+                Warehouse::where('id', $Quotation->warehouse_id)
+                    ->where('deleted_at', '=', null)
+                    ->first()
+            ) {
                 $sale['warehouse_id'] = $Quotation->warehouse_id;
             } else {
                 $sale['warehouse_id'] = '';
@@ -1995,7 +2078,7 @@ class SalesController extends BaseController
                     $item_product ? $data['del'] = 0 : $data['del'] = 1;
                     $data['product_variant_id'] = $detail->product_variant_id;
                     $data['code'] = $productsVariants->code;
-                    $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                    $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
 
                     if ($unit && $unit->operator == '/') {
                         $stock = $item_product ? $item_product->qte / $unit->operator_value : 0;
@@ -2104,7 +2187,7 @@ class SalesController extends BaseController
         $details = [];
 
         // Check If User Has Permission view All Records
-        if (! $view_records) {
+        if (!$view_records) {
             // Check If User->id === SaleReturn->id
             $this->authorizeForUser($request->user('api'), 'check_record', $SaleReturn);
         }
@@ -2152,7 +2235,7 @@ class SalesController extends BaseController
                 $item_product ? $data['del'] = 0 : $data['del'] = 1;
                 $data['product_variant_id'] = $detail->product_variant_id;
                 $data['code'] = $productsVariants->code;
-                $data['name'] = '['.$productsVariants->name.']'.$detail['product']['name'];
+                $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
 
                 if ($unit && $unit->operator == '/') {
                     $stock = $item_product ? $item_product->qte * $unit->operator_value : 0;
@@ -2256,12 +2339,12 @@ class SalesController extends BaseController
 
         // Tags
         $random_number = Str::random(10);
-        $invoice_url = url('/api/sale_pdf/'.$request->id.'?'.$random_number);
+        $invoice_url = url('/api/sale_pdf/' . $request->id . '?' . $random_number);
         $invoice_number = $sale->Ref;
 
-        $total_amount = $currency.' '.number_format($sale->GrandTotal, 2, '.', ',');
-        $paid_amount = $currency.' '.number_format($sale->paid_amount, 2, '.', ',');
-        $due_amount = $currency.' '.number_format($sale->GrandTotal - $sale->paid_amount, 2, '.', ',');
+        $total_amount = $currency . ' ' . number_format($sale->GrandTotal, 2, '.', ',');
+        $paid_amount = $currency . ' ' . number_format($sale->paid_amount, 2, '.', ',');
+        $due_amount = $currency . ' ' . number_format($sale->GrandTotal - $sale->paid_amount, 2, '.', ',');
 
         $contact_name = $sale['client']->name;
         $business_name = $settings->CompanyName;
@@ -2320,12 +2403,12 @@ class SalesController extends BaseController
 
         // Tags
         $random_number = Str::random(10);
-        $invoice_url = url('/api/sale_pdf/'.$request->id.'?'.$random_number);
+        $invoice_url = url('/api/sale_pdf/' . $request->id . '?' . $random_number);
         $invoice_number = $sale->Ref;
 
-        $total_amount = $currency.' '.number_format($sale->GrandTotal, 2, '.', ',');
-        $paid_amount = $currency.' '.number_format($sale->paid_amount, 2, '.', ',');
-        $due_amount = $currency.' '.number_format($sale->GrandTotal - $sale->paid_amount, 2, '.', ',');
+        $total_amount = $currency . ' ' . number_format($sale->GrandTotal, 2, '.', ',');
+        $paid_amount = $currency . ' ' . number_format($sale->paid_amount, 2, '.', ',');
+        $due_amount = $currency . ' ' . number_format($sale->GrandTotal - $sale->paid_amount, 2, '.', ',');
 
         $contact_name = $sale['client']->name;
         $business_name = $settings->CompanyName;
@@ -2354,7 +2437,8 @@ class SalesController extends BaseController
                 $client = new Client_Twilio($account_sid, $auth_token);
                 $client->messages->create($receiverNumber, [
                     'from' => $twilio_number,
-                    'body' => $message_text]);
+                    'body' => $message_text
+                ]);
 
             } catch (Exception $e) {
                 return response()->json(['message' => $e->getMessage()], 500);
@@ -2384,7 +2468,7 @@ class SalesController extends BaseController
 
                 return response()->json($result);
             } catch (\Exception $e) {
-                Log::error('Termii SMS Error: '.$e->getMessage());
+                Log::error('Termii SMS Error: ' . $e->getMessage());
 
                 return response()->json(['status' => 'error', 'message' => 'Failed to send SMS'], 500);
             }
@@ -2415,9 +2499,9 @@ class SalesController extends BaseController
 
             try {
                 $smsResponse = $sendSmsApi->sendSmsMessage($request);
-                echo 'Response body: '.$smsResponse;
+                echo 'Response body: ' . $smsResponse;
             } catch (Throwable $apiException) {
-                echo 'HTTP Code: '.$apiException->getCode()."\n";
+                echo 'HTTP Code: ' . $apiException->getCode() . "\n";
             }
 
         }
@@ -2450,12 +2534,12 @@ class SalesController extends BaseController
 
         // Tags
         $random_number = Str::random(10);
-        $invoice_url = url('/api/sale_pdf/'.$request->id.'?'.$random_number);
+        $invoice_url = url('/api/sale_pdf/' . $request->id . '?' . $random_number);
         $invoice_number = $sale->Ref;
 
-        $total_amount = $currency.' '.number_format($sale->GrandTotal, 2, '.', ',');
-        $paid_amount = $currency.' '.number_format($sale->paid_amount, 2, '.', ',');
-        $due_amount = $currency.' '.number_format($sale->GrandTotal - $sale->paid_amount, 2, '.', ',');
+        $total_amount = $currency . ' ' . number_format($sale->GrandTotal, 2, '.', ',');
+        $paid_amount = $currency . ' ' . number_format($sale->paid_amount, 2, '.', ',');
+        $due_amount = $currency . ' ' . number_format($sale->GrandTotal - $sale->paid_amount, 2, '.', ',');
 
         $contact_name = $sale['client']->name;
         $business_name = $settings->CompanyName;
@@ -2587,7 +2671,7 @@ class SalesController extends BaseController
                 ]);
 
             } catch (Exception $e) {
-                Log::error('Twilio SMS Error: '.$e->getMessage());
+                Log::error('Twilio SMS Error: ' . $e->getMessage());
 
                 ErrorLog::create([
                     'context' => 'Twilio SMS',
@@ -2619,7 +2703,7 @@ class SalesController extends BaseController
 
                 return response()->json($result);
             } catch (\Exception $e) {
-                Log::error('Termii SMS Error: '.$e->getMessage());
+                Log::error('Termii SMS Error: ' . $e->getMessage());
 
                 ErrorLog::create([
                     'context' => 'Termii SMS',
@@ -2658,7 +2742,7 @@ class SalesController extends BaseController
                 $smsResponse = $sendSmsApi->sendSmsMessage($request);
                 Log::info('Infobip SMS sent successfully', [$smsResponse]);
             } catch (Throwable $apiException) {
-                Log::error('Infobip SMS Error: '.$apiException->getMessage());
+                Log::error('Infobip SMS Error: ' . $apiException->getMessage());
 
                 ErrorLog::create([
                     'context' => 'Infobip SMS',
@@ -2713,7 +2797,7 @@ class SalesController extends BaseController
 
                 return response()->json($result);
             } catch (\Exception $e) {
-                Log::error('Termii SMS Error: '.$e->getMessage());
+                Log::error('Termii SMS Error: ' . $e->getMessage());
 
                 return response()->json(['status' => 'error', 'message' => 'Failed to send SMS'], 500);
             }
@@ -2725,9 +2809,9 @@ class SalesController extends BaseController
     public function getDocuments($saleId)
     {
         $this->authorizeForUser(request()->user('api'), 'view', Sale::class);
-        
+
         $sale = Sale::findOrFail($saleId);
-        
+
         $documents = DB::table('sale_documents')
             ->where('sale_id', $saleId)
             ->where('deleted_at', null)
@@ -2744,7 +2828,7 @@ class SalesController extends BaseController
     public function uploadDocuments(Request $request, $saleId)
     {
         $this->authorizeForUser($request->user('api'), 'update', Sale::class);
-        
+
         $sale = Sale::findOrFail($saleId);
 
         $request->validate([
@@ -2756,7 +2840,7 @@ class SalesController extends BaseController
         if ($request->hasFile('documents')) {
             // Create directory if it doesn't exist
             $uploadPath = public_path('images/sale_documents');
-            if (! file_exists($uploadPath)) {
+            if (!file_exists($uploadPath)) {
                 mkdir($uploadPath, 0755, true);
             }
 
@@ -2767,10 +2851,10 @@ class SalesController extends BaseController
                 $mimeType = $file->getMimeType();
 
                 $filename = time() . '_' . Str::random(10) . '_' . $originalName;
-                
+
                 // Move file to public/images/sale_documents
                 $file->move($uploadPath, $filename);
-                
+
                 $relativePath = 'images/sale_documents/' . $filename;
 
                 $documentId = DB::table('sale_documents')->insertGetId([
@@ -2798,13 +2882,13 @@ class SalesController extends BaseController
     public function downloadDocument($documentId)
     {
         $this->authorizeForUser(request()->user('api'), 'view', Sale::class);
-        
+
         $document = DB::table('sale_documents')
             ->where('id', $documentId)
             ->where('deleted_at', null)
             ->first();
 
-        if (! $document) {
+        if (!$document) {
             return response()->json([
                 'message' => 'Document not found in database',
                 'status' => false,
@@ -2813,7 +2897,7 @@ class SalesController extends BaseController
 
         $filePath = public_path($document->path);
 
-        if (! file_exists($filePath)) {
+        if (!file_exists($filePath)) {
             return response()->json([
                 'message' => 'Physical file not found on server',
                 'status' => false,
@@ -2828,13 +2912,13 @@ class SalesController extends BaseController
     public function deleteDocument($documentId)
     {
         $this->authorizeForUser(request()->user('api'), 'delete', Sale::class);
-        
+
         $document = DB::table('sale_documents')
             ->where('id', $documentId)
             ->where('deleted_at', null)
             ->first();
 
-        if (! $document) {
+        if (!$document) {
             return response()->json([
                 'message' => 'Document not found',
                 'status' => false,
