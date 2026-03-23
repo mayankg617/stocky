@@ -94,6 +94,7 @@ class PurchasesController extends BaseController
             ->where(function ($query) use ($request) {
                 return $query->when($request->filled('search'), function ($query) use ($request) {
                     return $query->where('Ref', 'LIKE', "%{$request->search}%")
+                        ->orWhere('invoice_no', 'LIKE', "%{$request->search}%")
                         ->orWhere('statut', 'LIKE', "%{$request->search}%")
                         ->orWhere('GrandTotal', $request->search)
                         ->orWhere('payment_statut', 'like', "$request->search")
@@ -124,6 +125,7 @@ class PurchasesController extends BaseController
             $item['id'] = $Purchase->id;
             $item['date'] = $Purchase['date'].' '.$Purchase['time'];
             $item['Ref'] = $Purchase->Ref;
+            $item['invoice_no'] = $Purchase->invoice_no;
             $item['warehouse_name'] = $Purchase['warehouse']->name;
             $item['discount'] = $Purchase->discount;
             $item['shipping'] = $Purchase->shipping;
@@ -197,6 +199,7 @@ class PurchasesController extends BaseController
             $order->date = $request->date;
             $order->time = now()->toTimeString();
             $order->Ref = $this->getNumberOrder();
+            $order->invoice_no = $request->invoice_no;
             $order->provider_id = $request->supplier_id;
             $order->GrandTotal = $request->GrandTotal;
             $order->warehouse_id = $request->warehouse_id;
@@ -631,7 +634,7 @@ if (!empty($value['batch_no']) || !empty($value['expiry_date'])) {
 
                                     if (! empty($value['batch_no']) || ! empty($value['expiry_date'])) {
                                         \DB::table('product_batches')
-                                            ->where('purchase_id', $purchase_id)
+                                            ->where('purchase_id', $id)
                                             ->where('product_id', $value['product_id'])
                                             ->where('batch_no', $value['batch_no'])
                                             ->update(['quantity' => \DB::raw('GREATEST(quantity - ' . (float) $removedQty . ', 0)')]);

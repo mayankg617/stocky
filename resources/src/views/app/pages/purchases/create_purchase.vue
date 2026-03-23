@@ -194,6 +194,16 @@
                   </validation-provider>
                 </b-col>
 
+                <!-- Supplier Invoice Number -->
+                <b-col lg="4" md="4" sm="12" class="mb-3">
+                  <b-form-group label="Supplier Invoice No">
+                    <b-form-input
+                      v-model="purchase.invoice_no"
+                      placeholder="Enter Supplier Invoice Number">
+                    </b-form-input>
+                  </b-form-group>
+                </b-col>
+
                 <!-- Product -->
                 <b-col md="12" class="mb-5">
                   <h6>{{$t('ProductName')}}</h6>
@@ -690,6 +700,7 @@ export default {
         date: new Date().toISOString().slice(0, 10),
         statut: "received",
         notes: "",
+        invoice_no: "",
         supplier_id: "",
         warehouse_id: "",
         tax_rate: 0,
@@ -1199,6 +1210,7 @@ export default {
             warehouse_id: this.purchase.warehouse_id,
             statut: this.purchase.statut,
             notes: this.purchase.notes,
+            invoice_no: this.purchase.invoice_no,
             tax_rate: this.purchase.tax_rate?this.purchase.tax_rate:0,
             TaxNet: this.purchase.TaxNet?this.purchase.TaxNet:0,
             discount: this.purchase.discount?this.purchase.discount:0,

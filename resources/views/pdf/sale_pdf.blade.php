@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Sale Invoice - {{$sale['Ref']}}</title>
+    <title>Sale Invoice - {{$sale['invoice_no'] ?? $sale['Ref']}}</title>
     @php
         // Price formatting helper function (shared behavior with other PDFs)
         $priceFormat = $setting['price_format'] ?? null;
@@ -79,7 +79,7 @@
                     </tr>
                     <tr>
                         <td style="text-align: right; color: #6b7280; font-weight: 600;">Invoice #:</td>
-                        <td style="text-align: right; color: #1f2937; font-weight: 500;">{{$sale['Ref']}}</td>
+                        <td style="text-align: right; color: #1f2937; font-weight: 500;">{{$sale['invoice_no'] ?? $sale['Ref']}}</td>
                     </tr>
                     <tr>
                         <td style="text-align: right; color: #6b7280; font-weight: 600;">Status:</td>

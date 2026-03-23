@@ -742,6 +742,12 @@ export default {
           thClass: "text-left"
         },
         {
+          label: "Invoice No",
+          field: "invoice_no",
+          tdClass: "text-left",
+          thClass: "text-left"
+        },
+        {
           label: this.$t("Supplier"),
           field: "provider_name",
           tdClass: "text-left",
@@ -951,6 +957,7 @@ export default {
 
       const headers = [
         self.$t("Reference"),
+        "Invoice No", // ✅ ADDED
         self.$t("Supplier"),
         self.$t("warehouse"),
         self.$t("Status"),
@@ -962,6 +969,7 @@ export default {
 
       const body = (self.purchases || []).map(purchase => ([
         purchase.Ref,
+        purchase.invoice_no, // ✅ ADDED
         purchase.provider_name,
         purchase.warehouse_name,
         purchase.statut,

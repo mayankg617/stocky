@@ -1587,6 +1587,12 @@ export default {
           thClass: "text-left"
         },
         {
+          label: "Invoice No",
+          field: "invoice_no",
+          tdClass: "text-left",
+          thClass: "text-left"
+        },
+        {
           label: this.$t("Created_by"),
           field: "created_by",
           tdClass: "text-left",

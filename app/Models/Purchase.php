@@ -9,7 +9,7 @@ class Purchase extends Model
     protected $dates = ['deleted_at'];
 
     protected $fillable = [
-        'date', 'Ref', 'provider_id', 'warehouse_id', 'GrandTotal', 'time',
+        'date', 'Ref', 'invoice_no','provider_id', 'warehouse_id', 'GrandTotal', 'time',
         'discount', 'shipping', 'statut', 'notes', 'TaxNet', 'tax_rate', 'paid_amount',
         'batch_no', 'expiry_date',
         'payment_statut', 'created_at', 'updated_at', 'deleted_at',

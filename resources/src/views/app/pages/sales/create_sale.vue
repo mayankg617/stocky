@@ -16,7 +16,7 @@
                 </b-modal>
 
                 <!-- date  -->
-                <b-col lg="4" md="4" sm="12" class="mb-3">
+                <b-col lg="3" md="4" sm="12" class="mb-3">
                   <validation-provider name="date" :rules="{ required: true }" v-slot="validationContext">
                     <b-form-group :label="$t('date') + ' ' + '*'">
                       <b-form-input :state="getValidationState(validationContext)" aria-describedby="date-feedback"
@@ -29,7 +29,7 @@
 
 
                 <!-- Customer -->
-                <b-col lg="4" md="4" sm="12" class="mb-3">
+                <b-col lg="3" md="4" sm="12" class="mb-3">
                   <validation-provider name="Customer" :rules="{ required: true }">
                     <b-form-group slot-scope="{ valid, errors }" :label="$t('Customer') + ' ' + '*'">
                       <b-input-group class="category-input-group">
@@ -51,7 +51,7 @@
                 </b-col>
 
                 <!-- warehouse -->
-                <b-col lg="4" md="4" sm="12" class="mb-3">
+                <b-col lg="3" md="4" sm="12" class="mb-3">
                   <validation-provider name="warehouse" :rules="{ required: true }">
                     <b-form-group slot-scope="{ valid, errors }" :label="$t('warehouse') + ' ' + '*'">
                       <v-select :class="{ 'is-invalid': !!errors.length }"
@@ -62,6 +62,16 @@
                       <b-form-invalid-feedback>{{ errors[0] }}</b-form-invalid-feedback>
                     </b-form-group>
                   </validation-provider>
+                </b-col>
+
+                <!-- Customer Invoice Number -->
+                <b-col lg="3" md="4" sm="12" class="mb-3">
+                  <b-form-group label="Customer Invoice No">
+                    <b-form-input
+                      v-model="sale.invoice_no"
+                      placeholder="Enter Customer Invoice Number">
+                    </b-form-input>
+                  </b-form-group>
                 </b-col>
 
                 <!-- Product -->
@@ -764,6 +774,7 @@ selected_brand: null,
         notes: "",
         client_id: "",
         warehouse_id: "",
+        invoice_no: "",
         tax_rate: 0,
         TaxNet: 0,
         shipping: 0,
@@ -1873,6 +1884,7 @@ selected_brand: null,
               warehouse_id: this.sale.warehouse_id,
               statut: this.sale.statut,
               notes: this.sale.notes,
+              invoice_no: this.sale.invoice_no,
               tax_rate: this.sale.tax_rate ? this.sale.tax_rate : 0,
               TaxNet: this.sale.TaxNet ? this.sale.TaxNet : 0,
               discount: this.sale.discount ? this.sale.discount : 0,

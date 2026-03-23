@@ -99,6 +99,7 @@ class SalesController extends BaseController
             ->where(function ($query) use ($request) {
                 return $query->when($request->filled('search'), function ($query) use ($request) {
                     return $query->where('Ref', 'LIKE', "%{$request->search}%")
+                        ->orWhere('invoice_no', 'LIKE', "%{$request->search}%")
                         ->orWhere('statut', 'LIKE', "%{$request->search}%")
                         ->orWhere('GrandTotal', $request->search)
                         ->orWhere('payment_statut', 'like', "%{$request->search}%")
@@ -131,6 +132,7 @@ class SalesController extends BaseController
             $item['id'] = $Sale['id'];
             $item['date'] = $Sale['date'] . ' ' . $Sale['time'];
             $item['Ref'] = $Sale['Ref'];
+            $item['invoice_no'] = $Sale->invoice_no;
             $item['created_by'] = $Sale['user']->username;
             $item['statut'] = $Sale['statut'];
             $item['shipping_status'] = $Sale['shipping_status'];
@@ -210,6 +212,7 @@ class SalesController extends BaseController
             $order->date = $request->date;
             $order->time = now()->toTimeString();
             $order->Ref = $this->getNumberOrder();
+            $order->invoice_no = $request->invoice_no;
             $order->client_id = $request->client_id;
             $order->GrandTotal = $request->GrandTotal;
             $order->warehouse_id = $request->warehouse_id;
@@ -1561,6 +1564,7 @@ class SalesController extends BaseController
         $sale['shipping'] = number_format($sale_data->shipping, 2, '.', '');
         $sale['statut'] = $sale_data->statut;
         $sale['Ref'] = $sale_data->Ref;
+        $sale['invoice_no'] = $sale_data->invoice_no;
         $sale['date'] = $sale_data->date . ' ' . $sale_data->time;
         $sale['GrandTotal'] = number_format($sale_data->GrandTotal, 2, '.', '');
         $sale['paid_amount'] = number_format($sale_data->paid_amount, 2, '.', '');
@@ -1594,7 +1598,22 @@ class SalesController extends BaseController
                 $data['name'] = '[' . $productsVariants->name . ']' . $detail['product']['name'];
             } else {
                 $data['code'] = $detail['product']['code'];
+
+            // Fetch brand using product_id + batch_no (if available)
+            $query = DB::table('purchase_details')
+                ->where('product_id', $detail->product_id);
+
+            if (!empty($detail->batch_no)) {
+                $query->where('batch_no', $detail->batch_no);
+            }
+
+            $brand = $query->orderByDesc('id')->value('purchase_name');
+            // Combine brand + chemical
+            if ($brand) {
+                $data['name'] = $brand . ' (' . $detail['product']['name'] . ')';
+            } else {
                 $data['name'] = $detail['product']['name'];
+            }
             }
 
             $data['detail_id'] = $detail_id += 1;
